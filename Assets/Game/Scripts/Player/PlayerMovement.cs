@@ -1,6 +1,7 @@
+using Unity.Netcode;
 using UnityEngine;
 
-public class PlayerMovement : MonoBehaviour
+public class PlayerMovement : NetworkBehaviour
 {
     private InputSystem inputActions;
 
@@ -37,8 +38,11 @@ public class PlayerMovement : MonoBehaviour
 
     private void Update()
     {
-        DoMovement();
-        DoLooking();
+        if (IsOwner)
+        {
+            DoMovement();
+            DoLooking();
+        }
     }
 
     private void DoLooking()
