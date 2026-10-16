@@ -11,7 +11,7 @@ public class ServerDiscoveryManager : MonoBehaviour
 
     public void Join()
     {
-        NetworkManager.Singleton.StartHost();
+        NetworkManager.Singleton.StartClient();
     }
 }
 
