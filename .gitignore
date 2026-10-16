@@ -110,3 +110,5 @@ InitTestScene*.unity*
 
 
 /Assets/Thirdparty
+
+.vscode/
