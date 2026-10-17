@@ -14,8 +14,14 @@ public class NetworkedPlayer : NetworkBehaviour
     NetworkVariableReadPermission.Everyone,
     NetworkVariableWritePermission.Server
 );
-
     public int PlayerSlot => playerSlot.Value;
+
+    [SerializeField] public NetworkVariable<int> health = new NetworkVariable<int>(
+    4,
+    NetworkVariableReadPermission.Everyone,
+    NetworkVariableWritePermission.Server
+);
+    [SerializeField] public int timesDied = 0;
 
     public override void OnNetworkSpawn()
     {

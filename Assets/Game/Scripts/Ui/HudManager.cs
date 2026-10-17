@@ -11,7 +11,6 @@ public class HudManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI Health;
     [SerializeField] private TextMeshProUGUI CountDown;
     private WorldManager worldManager;
-    private PlayerData playerData;
 
     void Start()
     {
@@ -30,7 +29,7 @@ public class HudManager : MonoBehaviour
         if (playerData == null) // for some reason it's null when initialized in #Start ...
         // it's solved now but whatever, can as well stay a lazy check who cares
         {
-            playerData = FindFirstObjectByType<PlayerData>();
+            playerData = FindFirstObjectByType<NetworkedPlayer>();
         }
         
         if (playerData != null)
