@@ -1,0 +1,3 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <ui:Label name="timer" text="10:00" style="-unity-text-align: upper-center; height: 27px; width: 1094px;"/>
+</ui:UXML>
