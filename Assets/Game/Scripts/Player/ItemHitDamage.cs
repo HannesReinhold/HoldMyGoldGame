@@ -33,6 +33,6 @@ public class ItemHitDamage : NetworkBehaviour
         player.itemCount.Value += 1;
         player.TakeDamage(damage, impulse);
 
-        NetworkObject.Despawn(true);
+        NetworkObject.Despawn(true); // TODO dont despawn with no damage dealt
     }
 }
