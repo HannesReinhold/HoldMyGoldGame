@@ -216,8 +216,12 @@ public class ServerDiscoveryManager : MonoBehaviour
 
     public void Disconnect()
     {
+        Debug.Log("Disconnecting...");
+
         if (networkManager != null && networkManager.IsListening)
+        {
             networkManager.Shutdown();
+        }
 
         StopDiscovery();
     }

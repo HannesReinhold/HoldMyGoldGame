@@ -53,7 +53,7 @@ public class GameManager : MonoBehaviour
     public void LeaveGame()
     {
         Debug.Log("Leave Game...");
-        ServerManager.Instance.Disconnect();
+        ServerDiscoveryManager.Instance.Disconnect();
 
         SceneManager.LoadScene("Networking");
 

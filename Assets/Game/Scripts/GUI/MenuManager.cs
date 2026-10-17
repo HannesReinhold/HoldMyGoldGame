@@ -57,7 +57,6 @@ public class MenuManager : MonoBehaviour
             Instance = null;
     }
 
-    // HOST
     public void OnHostPressed()
     {
         if (discoveryManager == null)
@@ -69,7 +68,6 @@ public class MenuManager : MonoBehaviour
         ShowHud();
     }
 
-    // SEARCH FOR GAMES
     public void OnFindGamesPressed()
     {
         if (discoveryManager == null)
@@ -84,7 +82,6 @@ public class MenuManager : MonoBehaviour
         discoveryManager.StartSearching();
     }
 
-    // CALLED WHEN A HOST IS FOUND
     private void OnHostDiscovered(string address)
     {
         Debug.Log($"Found host at {address}");
@@ -96,7 +93,6 @@ public class MenuManager : MonoBehaviour
             joinFoundGameButton.SetActive(true);
     }
 
-    // CONNECT TO THE DISCOVERED HOST
     public void OnJoinFoundGamePressed()
     {
         if (discoveryManager == null ||
