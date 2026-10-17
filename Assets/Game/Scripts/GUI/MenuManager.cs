@@ -108,6 +108,9 @@ public class MenuManager : MonoBehaviour
 
         if (discoveryStatusText != null)
             discoveryStatusText.text = "Connecting to game...";
+
+        CloseMainMenu();
+        ShowHud();
     }
 
     public void OnLeavePressed()
