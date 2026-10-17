@@ -954,7 +954,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5728336215834084828, guid: 17ad1985c41a1804d964a34f3ce311a5, type: 3}
       propertyPath: m_Name
-      value: DropZone (1)
+      value: DropZone Player 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 6366551343374045785, guid: 17ad1985c41a1804d964a34f3ce311a5, type: 3}
+      propertyPath: ownerSlot
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

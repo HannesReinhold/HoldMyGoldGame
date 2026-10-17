@@ -21,17 +21,17 @@ public class NetworkedPlayer : NetworkBehaviour
     {
         base.OnNetworkSpawn();
 
+        playerSlot.OnValueChanged += OnSlotChanged;
+
         if (IsServer)
         {
             int slot = FindFreeSlot();
             playerSlot.Value = slot;
             Debug.Log($"Slot {slot}");
-            /*TeleportToSpawnClientRpc(slot, GetSpawnPosition(slot, out Quaternion rot), rot,
-                new ClientRpcParams
-                {
-                    Send = new ClientRpcSendParams { TargetClientIds = new[] { OwnerClientId } }
-                });*/
         }
+
+        if (!IsServer && playerSlot.Value >= 0)
+            MoveToSpawn(playerSlot.Value);
 
         SetEnablePlayerCamera(IsOwner);
         playerMovement.SetEnableMovement(IsOwner);
@@ -60,6 +60,7 @@ public class NetworkedPlayer : NetworkBehaviour
             Cursor.visible = true;
         }
 
+        playerSlot.OnValueChanged -= OnSlotChanged;
         base.OnNetworkDespawn();
     }
 
@@ -101,18 +102,23 @@ public class NetworkedPlayer : NetworkBehaviour
         return transform.position;
     }
 
-    [ClientRpc]
-    private void TeleportToSpawnClientRpc(int slot, Vector3 position, Quaternion rotation, ClientRpcParams rpcParams = default)
+    private void OnSlotChanged(int oldValue, int newValue)
     {
-        // läuft nur beim Owner
+        // Fallback, falls der Slot erst nach dem Spawn ankommt (und Host-Fall)
+        if (IsOwner && newValue >= 0)
+            MoveToSpawn(newValue);
+    }
+
+    private void MoveToSpawn(int slot)
+    {
+        Vector3 pos = GetSpawnPosition(slot, out Quaternion rot);
+
         var cc = GetComponent<CharacterController>();
         if (cc != null) cc.enabled = false;
 
-        if (TryGetComponent(out Unity.Netcode.Components.NetworkTransform nt))
-            nt.Teleport(position, rotation, transform.localScale);
-        else
-            transform.SetPositionAndRotation(position, rotation);
+        transform.SetPositionAndRotation(pos, rot);
 
         if (cc != null) cc.enabled = true;
+        Physics.SyncTransforms();
     }
 }
