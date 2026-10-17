@@ -17,7 +17,6 @@ public class GameManager : NetworkBehaviour
     
     public event Action<GameStage, GameStage> StageChanged;
 
-    // public GameStage stage { get; private set; } = GameStage.NONE;
     public NetworkVariable<GameStage> stage = new NetworkVariable<GameStage>(
         GameStage.NONE,
         NetworkVariableReadPermission.Everyone,

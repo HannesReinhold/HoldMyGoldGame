@@ -12,6 +12,7 @@ public class MenuManager : MonoBehaviour
     public GameObject lobbyMenu;
     public GameObject pauseMenu;
     public GameObject hud;
+    public GameObject scoreboard;
 
     [Header("Relay UI")]
     [SerializeField] private RelayHostJoinManager relayManager;
@@ -93,7 +94,23 @@ public class MenuManager : MonoBehaviour
 
     private void OnStageChanged(GameStage oldStage, GameStage newStage)
     {
-        // Integrate HUD changes for each game stage here.
+        if (oldStage == GameStage.PLAY && newStage == GameStage.JOIN)
+        {
+            scoreboard.SetActive(true);
+            HideHud();
+        }
+    }
+
+    public void onPlayAgain()
+    {
+         scoreboard.SetActive(false);
+         ShowHud();
+    }
+
+    public void onLeave()
+    {
+        scoreboard.SetActive(false);
+        OnLeavePressed();
     }
 
     public void OnHostPressed()
@@ -228,7 +245,7 @@ public class MenuManager : MonoBehaviour
         else if (networkManager != null && networkManager.IsListening)
             networkManager.Shutdown();
 
-        CloseMainMenu();
+        OpenMainMenu();
         HideHud();
     }
 
