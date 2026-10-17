@@ -1,51 +1,46 @@
 using System;
 using Game.Scripts.GameLogic;
+using Unity.Netcode;
 using UnityEngine;
 
-public class WorldManager : MonoBehaviour
+public class WorldManager
 {
     
     public static WorldManager Instance { get; private set; }
 
-    [SerializeField] private float countdownSeconds = 3f;
-    [SerializeField] private float playSeconds = 300f; 
     
-    private long startTime; // total game time is 5:03 while movement is restricted in the first 3 seconds
     private long passedTime;
     
-    private void Awake()
+    public void Awake()
     {
         Instance = this;
     }
  
-    private void Start()
+    public void Start()
     {
-        if (GameManager.Instance != null)
-        {
-            GameManager.Instance.StageChanged += OnStageChanged;
-        }
+        GameManager.Instance.StageChanged += OnStageChanged;
     }
 
     
-    private void OnDestroy()
+    public void OnDestroy()
     {
         GameManager.Instance.StageChanged -= OnStageChanged;
     }
 
     
-    void Update()
+    public void Update()
     {
-        switch (GameManager.Instance.stage)
+        switch (GameManager.Instance.stage.Value)
         {
             case GameStage.COUNTDOWN:
-                if (DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - startTime > countdownSeconds * 1_000)
+                if (DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - GameManager.Instance.startTime.Value > GameManager.Instance.countdownSeconds * 1_000)
                 {
-                    GameManager.Instance.SetStage(GameStage.PAUSED);
+                    GameManager.Instance.SetStage(GameStage.PLAY);
                 } 
                 
                 break;
             case GameStage.PLAY:
-                if (DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - startTime - countdownSeconds * 1_000 > playSeconds * 1_000)
+                if (DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - GameManager.Instance.startTime.Value > GameManager.Instance.playSeconds * 1_000 + GameManager.Instance.countdownSeconds * 1_000)
                 {
                     GameManager.Instance.SetStage(GameStage.JOIN);
                 }
@@ -55,16 +50,22 @@ public class WorldManager : MonoBehaviour
     
     private void OnStageChanged(GameStage old, GameStage next)
     {
-        if (next == GameStage.COUNTDOWN && old != GameStage.PAUSED)
+        bool isHost = GameManager.Instance.localPlayer.IsHost;
+        if (next == GameStage.COUNTDOWN && old != GameStage.PAUSED && isHost)
         {
-            startTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-        } else if (next == GameStage.PAUSED)
+            setStartTime(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
+        } else if (next == GameStage.PAUSED && isHost)
         {
-            passedTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - startTime;
-        } else if (old == GameStage.PAUSED)
+            setStartTime(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - GameManager.Instance.startTime.Value);
+        } else if (old == GameStage.PAUSED && isHost)
         {
-            startTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - passedTime;
+            setStartTime(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - passedTime);
         }
+    }
+
+    private void setStartTime(long time)
+    {
+        GameManager.Instance.startTime.Value = time;
     }
     
 }

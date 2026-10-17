@@ -1,4 +1,5 @@
 using System;
+using Game.Scripts.GameLogic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -10,33 +11,52 @@ public class HudManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI Timer;
     [SerializeField] private TextMeshProUGUI Health;
     [SerializeField] private TextMeshProUGUI CountDown;
-    private WorldManager worldManager;
+    [SerializeField] private TextMeshProUGUI Stage;
     private NetworkedPlayer playerData;
 
     void Start()
     {
-        worldManager = FindObjectOfType<WorldManager>();
+        GameManager.Instance.StageChanged += OnStageChanged;
         playerData = GameManager.Instance.localPlayer;
     }
 
     void Update()
     {
-        long time = DateTime.Now.TimeOfDay.Seconds;
-        
-        float minutes = Mathf.FloorToInt(time / 60);  
-        float seconds = Mathf.FloorToInt(time % 60);
-        
-        Timer.text = string.Format("{0:00}:{1:00}", minutes, seconds);
-
-        if (playerData == null) // for some reason it's null when initialized in #Start ...
-        // it's solved now but whatever, can as well stay a lazy check who cares
+        if (GameManager.Instance.stage.Value == GameStage.PLAY)
         {
-            playerData = FindFirstObjectByType<NetworkedPlayer>();
+            var gm = GameManager.Instance;
+
+            double elapsed = (DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - gm.startTime.Value) / 1000.0;
+            float sinceCountdownEnded = Mathf.Max((float)(elapsed - gm.countdownSeconds), 0f);
+            float time = Mathf.Max(gm.playSeconds - sinceCountdownEnded, 0f);
+
+            int minutes = Mathf.FloorToInt(time / 60f);
+            int seconds = Mathf.FloorToInt(time % 60f);
+            Timer.text = $"{minutes:00}:{seconds:00}";
+        }
+
+        if (GameManager.Instance.stage.Value == GameStage.COUNTDOWN)
+        {
+            float time =
+                (float) (DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - GameManager.Instance.startTime.Value) /
+                         1_000;
+            
+            Debug.Log("time " + time);
+            
+            CountDown.text = "" + (2 - (int)Math.Floor(Math.Clamp(time, 0, GameManager.Instance.countdownSeconds)));
         }
         
         if (playerData != null)
         {
             Health.text = playerData.health.Value.ToString() + " | " + playerData.timesDied;
+        }
+    }
+    
+    private void OnStageChanged(GameStage old, GameStage next)
+    {
+        if (Stage != null)
+        {
+            Stage.text = next.ToString();
         }
     }
 }
