@@ -72,8 +72,22 @@ public class PlayerMovement : MonoBehaviour
         float lookX = looking.x * lookSensitivity * Time.deltaTime;
         float lookY = looking.y * lookSensitivity * Time.deltaTime;
 
+        float before = xRotation;
         xRotation -= lookY;
-        xRotation = Mathf.Clamp(xRotation, -90f, 90f);
+
+        float maxDown = GetMaxLookDown();
+        if (xRotation > maxDown)
+        {
+            // Limit ist enger geworden (mehr Gold): Blick sanft hochdrücken statt ruckartig springen
+            // Spieler schiebt aktiv in das Limit: einfach am Limit stoppen
+            float limited = before > maxDown
+                ? Mathf.MoveTowards(before, maxDown, limitPullSpeed * Time.deltaTime)
+                : maxDown;
+
+            xRotation = Mathf.Min(xRotation, limited);
+        }
+
+        xRotation = Mathf.Max(xRotation, -maxLookUp);
 
         cam.transform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
 
@@ -171,5 +185,22 @@ public class PlayerMovement : MonoBehaviour
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
         }
+    }
+
+    [Header("Blickwinkel (Gold im Weg)")]
+    [SerializeField] private float maxLookUp = 90f;
+    [SerializeField] private float maxLookDownFree = 90f;      // wenig Gold: voll nach unten
+    [SerializeField] private float maxLookDownBlocked = 30f;   // viel Gold: nur noch so weit
+    [SerializeField] private int goldFreeUntil = 10;           // bis hierhin keine Einschränkung
+    [SerializeField] private int goldBlockedFrom = 30;         // ab hier gilt der Mindestwinkel
+    [SerializeField] private float limitPullSpeed = 120f;      // Grad/s, mit der der Blick hochgedrückt wird
+
+    private float GetMaxLookDown()
+    {
+        if (networkedPlayer == null) return maxLookDownFree;
+
+        // 0 bis goldFreeUntil -> 0, goldBlockedFrom und mehr -> 1, dazwischen linear
+        float t = Mathf.InverseLerp(goldFreeUntil, goldBlockedFrom, networkedPlayer.GoldBarCount);
+        return Mathf.Lerp(maxLookDownFree, maxLookDownBlocked, t);
     }
 }

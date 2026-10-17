@@ -140,7 +140,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 2856043236
+  GlobalObjectIdHash: 3059258757
   InScenePlacedSourceGlobalObjectIdHash: 0
   m_InScenePlacedDisabledByDefault: 0
   DeferredDespawnTick: 0
@@ -245,6 +245,12 @@ MonoBehaviour:
   gravity: -9.81
   movementEnabled: 0
   playerEnabled: 1
+  maxLookUp: 90
+  maxLookDownFree: 90
+  maxLookDownBlocked: 30
+  goldFreeUntil: 10
+  goldBlockedFrom: 24
+  limitPullSpeed: 120
 --- !u!114 &242171729201180907
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -381,9 +387,10 @@ MonoBehaviour:
   targetPlayer: {fileID: 6540924311002986634}
   goldBarPrefab: {fileID: 5907902913097566749, guid: 546474e6189e74344ac41ab426da55cc, type: 3}
   stackOrigin: {fileID: 815508207310199576}
+  randomRotation: 1
   columns: 2
   rows: 2
-  barSpacing: {x: 0.26, y: 0.2, z: 0.4}
+  barSpacing: {x: 0.26, y: 0.14, z: 0.4}
 --- !u!1 &3557858841055659239
 GameObject:
   m_ObjectHideFlags: 0
@@ -507,7 +514,7 @@ Transform:
   m_GameObject: {fileID: 7550254050635311613}
   serializedVersion: 2
   m_LocalRotation: {x: -0.000000037748947, y: -3.641561e-15, z: 0.000000044703484, w: 1}
-  m_LocalPosition: {x: -0.013999909, y: 0.56700027, z: 0.04999999}
+  m_LocalPosition: {x: -0.014, y: 0.5811, z: 0.05}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -544,7 +551,7 @@ Camera:
     y: 0
     width: 1
     height: 1
-  near clip plane: 0.18
+  near clip plane: 0.1
   far clip plane: 1000
   field of view: 60
   orthographic: 0
@@ -1217,7 +1224,7 @@ MonoBehaviour:
   headWeight: 0
   maxBonePitch: 70
   cameraFollowsHead: 1
-  cameraOffset: {x: 0, y: 0.05, z: 0.1}
+  cameraOffset: {x: 0, y: -0.2, z: 0.1}
 --- !u!114 &8992925157191374593
 MonoBehaviour:
   m_ObjectHideFlags: 0
