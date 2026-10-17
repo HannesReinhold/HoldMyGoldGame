@@ -14,6 +14,7 @@ public class NetworkedPlayerInteraction : NetworkBehaviour
 
     [Header("Interaction")]
     public float pickupRange = 3f;
+    public float highlightRange = 5f;
     public LayerMask pickupLayers = 0;
     public float dropForwardOffset = 1.5f;
     public float dropUpOffset = 0.3f;
@@ -40,16 +41,7 @@ public class NetworkedPlayerInteraction : NetworkBehaviour
     public bool enableInteractions;
 
     private PickableItem currentSelectedItem;
-
-
-    // item numbers
-    private NetworkVariable<int> itemCount = new NetworkVariable<int>(
-            10,
-            NetworkVariableReadPermission.Everyone,
-            NetworkVariableWritePermission.Server
-        );
-
-    public int GoldBarCount => itemCount.Value;
+    private HighlightableZone aimedZone;
 
 
 
@@ -57,7 +49,7 @@ public class NetworkedPlayerInteraction : NetworkBehaviour
     {
         base.OnNetworkSpawn();
 
-        itemCount.OnValueChanged += OnItemCountChanged;
+        networkedPlayer.itemCount.OnValueChanged += OnItemCountChanged;
 
         if (!IsOwner)
             return;
@@ -71,7 +63,7 @@ public class NetworkedPlayerInteraction : NetworkBehaviour
 
     public override void OnNetworkDespawn()
     {
-        itemCount.OnValueChanged -= OnItemCountChanged;
+        networkedPlayer.itemCount.OnValueChanged -= OnItemCountChanged;
 
         if (inputActions != null)
         {
@@ -81,6 +73,11 @@ public class NetworkedPlayerInteraction : NetworkBehaviour
             inputActions.Disable();
             inputActions.Dispose();
             inputActions = null;
+        }
+
+        if (aimedZone != null) { 
+            aimedZone.SetHighlight(false); 
+            aimedZone = null;
         }
 
         base.OnNetworkDespawn();
@@ -110,8 +107,11 @@ public class NetworkedPlayerInteraction : NetworkBehaviour
                 currentSelectedItem.SetHighlight(false);
         }*/
 
-        if (!IsOwner || !isCharging) return;
+        if (!IsOwner) return;
 
+        UpdateAimedZone();
+
+        if (!isCharging) return;
         // Laden abbrechen, wenn Interaktionen gesperrt werden (z. B. Pause)
         if (!enableInteractions)
         {
@@ -131,16 +131,14 @@ public class NetworkedPlayerInteraction : NetworkBehaviour
 
         Debug.Log("Try to pickup item");
 
-        DropZone dropZone = FindNearest<DropZone>();
-        PickupLocation pickupLoc = FindNearest<PickupLocation>();
 
-        if (dropZone != null && (pickupLoc == null || SqrDistTo(dropZone) <= SqrDistTo(pickupLoc)))
+        if (aimedZone is DropZone dropZone)
         {
             TakeFromDropZoneServerRpc(dropZone.NetworkObject);
             return;
         }
 
-        if (pickupLoc != null)
+        if (aimedZone is PickupLocation pickupLoc)
         {
             PickupFromLocationServerRpc(pickupLoc.NetworkObject);
             return;
@@ -149,7 +147,7 @@ public class NetworkedPlayerInteraction : NetworkBehaviour
         // CHeck if item in front of player cam
         Ray ray = new Ray(playerCamera.transform.position, playerCamera.transform.forward);
 
-        if (Physics.Raycast(ray, out RaycastHit hit, pickupRange, pickupLayers, QueryTriggerInteraction.Ignore))
+        if (Physics.Raycast(ray, out RaycastHit hit, highlightRange, pickupLayers, QueryTriggerInteraction.Ignore))
         {
             Debug.Log("Collision" + hit.collider.gameObject);
 
@@ -168,11 +166,10 @@ public class NetworkedPlayerInteraction : NetworkBehaviour
     private void OnDropStarted(InputAction.CallbackContext context)
     {
         if (!IsOwner || !IsSpawned || !enableInteractions) return;
-        if (GoldBarCount <= 0) return;
+        if (networkedPlayer.GoldBarCount <= 0) return;
 
         // In einer Dropzone wird sofort eingezahlt, nie geworfen
-        DropZone zone = FindNearest<DropZone>();
-        if (zone != null)
+        if (aimedZone is DropZone zone)
         {
             DepositToDropZoneServerRpc(zone.NetworkObject);
             return;
@@ -194,32 +191,34 @@ public class NetworkedPlayerInteraction : NetworkBehaviour
         float charge = Charge01;
         isCharging = false;
 
-        if (!IsOwner || GoldBarCount <= 0) return;
+        if (!IsOwner || networkedPlayer.GoldBarCount <= 0) return;
 
         DropItemServerRpc(playerCamera.transform.forward, charge);
     }
 
-    private T FindNearest<T>() where T : NetworkBehaviour
+    private HighlightableZone GetAimedZone()
     {
-        Collider[] hits = Physics.OverlapSphere(
-            transform.position, pickupRange, locationLayers, QueryTriggerInteraction.Collide);
+        Ray ray = new Ray(playerCamera.transform.position, playerCamera.transform.forward);
 
-        T nearest = null;
-        float best = float.MaxValue;
-
-        foreach (var h in hits)
+        // QueryTriggerInteraction.Collide ist nötig, weil die Zonen Trigger-Collider sind
+        if (Physics.Raycast(ray, out RaycastHit hit, highlightRange, locationLayers, QueryTriggerInteraction.Collide))
         {
-            var c = h.GetComponentInParent<T>();
-            if (c == null || !c.IsSpawned) continue;
-
-            float d = (c.transform.position - transform.position).sqrMagnitude;
-            if (d < best) { best = d; nearest = c; }
+            var zone = hit.collider.GetComponentInParent<HighlightableZone>();
+            if (zone != null && zone.IsSpawned)
+                return zone;
         }
-        return nearest;
+        return null;
     }
 
-    private float SqrDistTo(Component c) =>
-        (c.transform.position - transform.position).sqrMagnitude;
+    private void UpdateAimedZone()
+    {
+        HighlightableZone target = (IsSpawned && enableInteractions) ? GetAimedZone() : null;
+        if (target == aimedZone) return;
+
+        if (aimedZone != null) aimedZone.SetHighlight(false);
+        aimedZone = target;
+        if (aimedZone != null) aimedZone.SetHighlight(true);
+    }
 
 
 
@@ -242,7 +241,7 @@ public class NetworkedPlayerInteraction : NetworkBehaviour
         if (Vector3.Distance(transform.position, target.transform.position) > pickupRange + 1f)
             return;
 
-        itemCount.Value++;
+        networkedPlayer.itemCount.Value++;
 
         Debug.Log("Pickup Item on server");
         target.Despawn(true);
@@ -254,7 +253,7 @@ public class NetworkedPlayerInteraction : NetworkBehaviour
         if (rpcParams.Receive.SenderClientId != OwnerClientId)
             return;
 
-        if (itemCount.Value <= 0 || itemPrefab == null)
+        if (networkedPlayer.itemCount.Value <= 0 || itemPrefab == null)
             return;
 
         // Client-Werten nie trauen
@@ -279,7 +278,7 @@ public class NetworkedPlayerInteraction : NetworkBehaviour
 
         droppedItem.Spawn();
 
-        itemCount.Value--;
+        networkedPlayer.itemCount.Value--;
     }
 
     [ServerRpc]
@@ -298,12 +297,12 @@ public class NetworkedPlayerInteraction : NetworkBehaviour
         Collider col = locObj.GetComponent<Collider>();
         Vector3 closest = col.ClosestPoint(transform.position);
 
-        if (Vector3.Distance(transform.position, closest) > pickupRange + 1f)
+        if (Vector3.Distance(transform.position, closest) > highlightRange + 1f)
             return;
 
         int amount = location.TryTake();
         if (amount > 0)
-            itemCount.Value += amount;
+            networkedPlayer.itemCount.Value += amount;
     }
 
     [ServerRpc]
@@ -321,14 +320,14 @@ public class NetworkedPlayerInteraction : NetworkBehaviour
         Collider col = zoneObj.GetComponent<Collider>();
         Vector3 closest = col.ClosestPoint(transform.position);
 
-        if (Vector3.Distance(transform.position, closest) > pickupRange + 1f)
+        if (Vector3.Distance(transform.position, closest) > highlightRange + 1f)
             return;
 
-        int amount = itemCount.Value;
+        int amount = networkedPlayer.itemCount.Value;
         if (amount <= 0) return;
 
         zone.Deposit(amount);
-        itemCount.Value = 0;
+        networkedPlayer.itemCount.Value = 0;
     }
 
     [ServerRpc]
@@ -346,12 +345,12 @@ public class NetworkedPlayerInteraction : NetworkBehaviour
         Collider col = zoneObj.GetComponent<Collider>();
         Vector3 closest = col.ClosestPoint(transform.position);
 
-        if (Vector3.Distance(transform.position, closest) > pickupRange + 1f)
+        if (Vector3.Distance(transform.position, closest) > highlightRange + 1f)
             return;
 
         int amount = zone.Take();
         if (amount > 0)
-            itemCount.Value += amount;
+            networkedPlayer.itemCount.Value += amount;
     }
 }
 

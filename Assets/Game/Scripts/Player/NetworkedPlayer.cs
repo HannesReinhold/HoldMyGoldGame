@@ -21,6 +21,16 @@ public class NetworkedPlayer : NetworkBehaviour
     NetworkVariableReadPermission.Everyone,
     NetworkVariableWritePermission.Server
 );
+
+    // item numbers
+    public NetworkVariable<int> itemCount = new NetworkVariable<int>(
+            10,
+            NetworkVariableReadPermission.Everyone,
+            NetworkVariableWritePermission.Server
+        );
+    public int GoldBarCount => itemCount.Value;
+
+
     [SerializeField] public int timesDied = 0;
 
     [Header("Health")]

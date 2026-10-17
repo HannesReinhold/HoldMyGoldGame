@@ -272,7 +272,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 2856043236
+  GlobalObjectIdHash: 3059258757
   InScenePlacedSourceGlobalObjectIdHash: 0
   m_InScenePlacedDisabledByDefault: 0
   DeferredDespawnTick: 0
@@ -314,6 +314,11 @@ MonoBehaviour:
       MinSecondsBetweenUpdates: 0
       MaxSecondsBetweenUpdates: 0
     m_InternalValue: 4
+  itemCount:
+    UpdateTraits:
+      MinSecondsBetweenUpdates: 0
+      MaxSecondsBetweenUpdates: 0
+    m_InternalValue: 10
   timesDied: 0
   maxHealth: 4
   invulnerableTime: 0.5
@@ -330,6 +335,32 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6d8b197c3a03f9569ace894c791df147, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerMovement
+  networkedPlayer: {fileID: 6540924311002986634}
+  maxItemsForSlowdown: 100
+  slowdownCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1.0024233
+      value: 0.0004913807
+      inSlope: 0.012606079
+      outSlope: 0.012606079
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.47143933
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
   cam: {fileID: 5340447060612071793}
   movementSpeed: 4
   lookSensitivity: 5
@@ -403,6 +434,7 @@ MonoBehaviour:
   itemPrefab: {fileID: 5400267961435067128, guid: 635f6f53a75e2a545a56cb6e05ef25c8, type: 3}
   networkedPlayer: {fileID: 6540924311002986634}
   pickupRange: 3
+  highlightRange: 5
   pickupLayers:
     serializedVersion: 2
     m_Bits: 64

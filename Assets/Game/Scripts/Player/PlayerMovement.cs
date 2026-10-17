@@ -7,6 +7,11 @@ public class PlayerMovement : MonoBehaviour
 
     private CharacterController controller;
 
+    [Header("Gewicht")]
+    public NetworkedPlayer networkedPlayer;
+    [SerializeField] private int maxItemsForSlowdown = 10;   // ab hier ist die Kurve am Ende
+    [SerializeField] private AnimationCurve slowdownCurve = AnimationCurve.Linear(0f, 1f, 1f, 0f);
+
     [SerializeField] private Camera cam;
     [SerializeField] private float movementSpeed = 2.0f;
     [SerializeField] public float lookSensitivity = 1.0f;
@@ -73,14 +78,21 @@ public class PlayerMovement : MonoBehaviour
         if (grounded && velocity.y < 0f)
             velocity.y = -2f;
 
+        Vector2 input = GetPlayerMovement();
+        float t = Mathf.Clamp01((float)networkedPlayer.GoldBarCount / maxItemsForSlowdown);
+
         // Springen (Taste gehalten = automatisch weiter springen)
         if (grounded && inputActions.FPSController.Jump.IsPressed())
-            velocity.y = Mathf.Sqrt(-2f * gravity * jumpHeight);
+        {
+            float processedJumpHeight = slowdownCurve.Evaluate(t) * jumpHeight;
+            velocity.y = Mathf.Sqrt(-2f * gravity * processedJumpHeight);
+        }
 
         velocity.y += gravity * Time.deltaTime;
 
-        Vector2 input = GetPlayerMovement();
-        Vector3 move = (transform.right * input.x + transform.forward * input.y) * movementSpeed;
+
+        float processedMovementSpeed = slowdownCurve.Evaluate(t)*movementSpeed;
+        Vector3 move = (transform.right * input.x + transform.forward * input.y) * processedMovementSpeed;
 
         // Ein einziger Move: Laufen + Knockback + Vertikal
         Vector3 total = move + knockback + Vector3.up * velocity.y;

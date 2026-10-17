@@ -1,7 +1,7 @@
 using Unity.Netcode;
 using UnityEngine;
 
-public class DropZone : NetworkBehaviour
+public class DropZone : HighlightableZone
 {
 
     [Header("Entnahme")]

@@ -1,7 +1,7 @@
 using Unity.Netcode;
 using UnityEngine;
 
-public class PickupLocation : NetworkBehaviour
+public class PickupLocation : HighlightableZone
 {
     public int amountPerPickup = 1;
     public float interactRadius = 3f;   // Server-Check der Distanz
