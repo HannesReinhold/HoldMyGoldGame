@@ -1,19 +1,24 @@
+
 using Unity.Netcode;
 using UnityEngine;
+using TMPro;
 
 public class MenuManager : MonoBehaviour
 {
-
+    [Header("Menu References")]
     public GameObject menuCam;
     public GameObject canvas;
-
     public GameObject lobbyMenu;
     public GameObject pauseMenu;
-
     public GameObject hud;
 
+    [Header("Server Discovery UI")]
+    [SerializeField] private TMP_Text discoveryStatusText;
+    [SerializeField] private GameObject joinFoundGameButton;
 
     public static MenuManager Instance { get; private set; }
+
+    private ServerDiscoveryManager discoveryManager;
 
     private void Awake()
     {
@@ -24,22 +29,89 @@ public class MenuManager : MonoBehaviour
         }
 
         Instance = this;
-
         DontDestroyOnLoad(gameObject);
     }
 
-    public void OnHostPressed()
+    private void Start()
     {
-        CloseMainMenu();
-        ShowHud();
-        ServerManager.Instance.Host();
+        discoveryManager = ServerDiscoveryManager.Instance;
+
+        if (discoveryManager == null)
+        {
+            Debug.LogError("ServerDiscoveryManager not found!");
+            return;
+        }
+
+        discoveryManager.OnHostDiscovered += OnHostDiscovered;
+
+        if (joinFoundGameButton != null)
+            joinFoundGameButton.SetActive(false);
     }
 
-    public void OnJoinPressed()
+    private void OnDestroy()
     {
+        if (discoveryManager != null)
+            discoveryManager.OnHostDiscovered -= OnHostDiscovered;
+
+        if (Instance == this)
+            Instance = null;
+    }
+
+    // HOST
+    public void OnHostPressed()
+    {
+        if (discoveryManager == null)
+            return;
+
+        discoveryManager.Host();
+
         CloseMainMenu();
         ShowHud();
-        ServerManager.Instance.Join();
+    }
+
+    // SEARCH FOR GAMES
+    public void OnFindGamesPressed()
+    {
+        if (discoveryManager == null)
+            return;
+
+        if (discoveryStatusText != null)
+            discoveryStatusText.text = "Searching for games...";
+
+        if (joinFoundGameButton != null)
+            joinFoundGameButton.SetActive(false);
+
+        discoveryManager.StartSearching();
+    }
+
+    // CALLED WHEN A HOST IS FOUND
+    private void OnHostDiscovered(string address)
+    {
+        Debug.Log($"Found host at {address}");
+
+        if (discoveryStatusText != null)
+            discoveryStatusText.text = $"Game found: {address}";
+
+        if (joinFoundGameButton != null)
+            joinFoundGameButton.SetActive(true);
+    }
+
+    // CONNECT TO THE DISCOVERED HOST
+    public void OnJoinFoundGamePressed()
+    {
+        if (discoveryManager == null ||
+            string.IsNullOrEmpty(discoveryManager.DiscoveredHostAddress))
+        {
+            if (discoveryStatusText != null)
+                discoveryStatusText.text = "No game found. Search again.";
+
+            return;
+        }
+
+        discoveryManager.JoinDiscoveredHost();
+
+        if (discoveryStatusText != null)
+            discoveryStatusText.text = "Connecting to game...";
     }
 
     public void OnLeavePressed()
@@ -100,7 +172,7 @@ public class MenuManager : MonoBehaviour
         menuCam.SetActive(false);
         canvas.SetActive(false);
 
-        if(GameManager.Instance.localPlayer != null)
+        if (GameManager.Instance.localPlayer != null)
             GameManager.Instance.localPlayer.SetEnablePlayerCamera(true);
 
         Cursor.lockState = CursorLockMode.Locked;
@@ -119,14 +191,9 @@ public class MenuManager : MonoBehaviour
         Cursor.visible = true;
     }
 
-
-    // Sub Menus
-
     public void OpenLobbyMenu()
     {
         lobbyMenu.SetActive(true);
         pauseMenu.SetActive(false);
     }
-
-
 }
