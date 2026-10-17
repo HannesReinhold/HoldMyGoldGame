@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 [RequireComponent(typeof(NetworkObject))]
 public class NetworkedGoldBarStack : NetworkBehaviour
@@ -14,6 +15,7 @@ public class NetworkedGoldBarStack : NetworkBehaviour
     [SerializeField] private Transform stackOrigin;
 
     [Header("Grid Layout")]
+    public float randomRotation = 1;
     [Min(1)][SerializeField] private int columns = 4;
     [Min(1)][SerializeField] private int rows = 4;
     [SerializeField]
@@ -157,8 +159,9 @@ public class NetworkedGoldBarStack : NetworkBehaviour
                 row * barSpacing.z);
 
             GameObject bar = Instantiate(goldBarPrefab, stackOrigin);
+            Random.InitState(column*rows+row+layer);
             bar.transform.localPosition = localPosition;
-            bar.transform.localRotation = Quaternion.identity;
+            bar.transform.localRotation = Quaternion.identity * Quaternion.Euler(0f, Random.Range(-randomRotation, randomRotation), 0f);
 
             visualBars.Add(bar);
         }
