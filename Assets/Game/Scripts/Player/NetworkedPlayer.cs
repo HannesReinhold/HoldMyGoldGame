@@ -73,12 +73,14 @@ public class NetworkedPlayer : NetworkBehaviour
     private int FindFreeSlot()
     {
         var used = new System.Collections.Generic.HashSet<int>();
+
         foreach (var client in NetworkManager.ConnectedClientsList)
         {
             if (client.ClientId == OwnerClientId || client.PlayerObject == null) continue;
-            var other = client.PlayerObject.GetComponent<NetworkedPlayerInteraction>();
-            if (other != null && playerSlot.Value >= 0)
-                used.Add(playerSlot.Value);
+
+            var other = client.PlayerObject.GetComponent<NetworkedPlayer>();
+            if (other != null && other.playerSlot.Value >= 0)
+                used.Add(other.playerSlot.Value);
         }
 
         int slot = 0;
