@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 3657581578347488488}
   - component: {fileID: 6666838106971947477}
   - component: {fileID: 3838041844361808284}
+  - component: {fileID: 7334575401881418484}
   m_Layer: 6
   m_Name: PickableItem
   m_TagString: Untagged
@@ -128,7 +129,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 651839214
+  GlobalObjectIdHash: 4281013405
   InScenePlacedSourceGlobalObjectIdHash: 803586384
   m_InScenePlacedDisabledByDefault: 0
   DeferredDespawnTick: 0
@@ -229,3 +230,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PickableItem
   ShowTopMostFoldoutHeaderGroup: 1
+--- !u!114 &7334575401881418484
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1617558150386325822}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f1e94625b655dab4680dd78efcc69a77, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ItemHitDamage
+  ShowTopMostFoldoutHeaderGroup: 1
+  damage: 1
+  knockbackForce: 8
+  upwardBoost: 0.4
+  minImpactSpeed: 3
+  ignoreAfterSpawn: 0.3

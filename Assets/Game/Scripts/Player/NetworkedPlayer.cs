@@ -23,6 +23,14 @@ public class NetworkedPlayer : NetworkBehaviour
 );
     [SerializeField] public int timesDied = 0;
 
+    [Header("Health")]
+    public int maxHealth = 4;
+    public float invulnerableTime = 0.5f;   // Schutz gegen Mehrfachtreffer
+    public float respawnLockTime = 1f;      // Schutz gegen doppeltes Sterben beim Respawn
+
+    private float lastHitTime = -10f;
+    private float lastRespawnTime = -10f;
+
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
@@ -36,7 +44,7 @@ public class NetworkedPlayer : NetworkBehaviour
             Debug.Log($"Slot {slot}");
         }
 
-        if (!IsServer && playerSlot.Value >= 0)
+        if (IsOwner && !IsServer && playerSlot.Value >= 0)
             MoveToSpawn(playerSlot.Value);
 
         SetEnablePlayerCamera(IsOwner);
@@ -128,5 +136,54 @@ public class NetworkedPlayer : NetworkBehaviour
 
         if (cc != null) cc.enabled = true;
         Physics.SyncTransforms();
+    }
+
+    public void TakeDamage(int amount, Vector3 knockbackImpulse)
+    {
+        if (!IsServer) return;
+        if (health.Value <= 0) return;
+        if (Time.time - lastRespawnTime < respawnLockTime) return;
+        if (Time.time - lastHitTime < invulnerableTime) return;
+
+        lastHitTime = Time.time;
+        health.Value = Mathf.Max(0, health.Value - amount);
+
+        if (health.Value <= 0)
+        {
+            Kill();
+            return;
+        }
+
+        KnockbackClientRpc(knockbackImpulse, OwnerOnly());
+    }
+
+    public void Kill()
+    {
+        if (!IsServer) return;
+        if (Time.time - lastRespawnTime < respawnLockTime) return;
+
+        lastRespawnTime = Time.time;
+        timesDied++;
+        health.Value = maxHealth;
+
+        RespawnClientRpc(OwnerOnly());
+    }
+
+    private ClientRpcParams OwnerOnly() => new ClientRpcParams
+    {
+        Send = new ClientRpcSendParams { TargetClientIds = new[] { OwnerClientId } }
+    };
+
+    [ClientRpc]
+    private void KnockbackClientRpc(Vector3 impulse, ClientRpcParams rpcParams = default)
+    {
+        playerMovement.AddKnockback(impulse);
+    }
+
+    [ClientRpc]
+    private void RespawnClientRpc(ClientRpcParams rpcParams = default)
+    {
+        MoveToSpawn(playerSlot.Value);
+        playerMovement.ResetMotion();
     }
 }

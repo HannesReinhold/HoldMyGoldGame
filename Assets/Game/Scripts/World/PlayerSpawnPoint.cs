@@ -2,7 +2,19 @@ using UnityEngine;
 
 public class PlayerSpawnPoint : MonoBehaviour
 {
-    public int slot;
+    [Tooltip("Nur nötig, wenn keine DropZone im Parent liegt")]
+    [SerializeField] private int fallbackSlot;
+
+    private DropZone zone;
+
+    public int slot
+    {
+        get
+        {
+            if (zone == null) zone = GetComponentInParent<DropZone>();
+            return zone != null ? zone.ownerSlot : fallbackSlot;
+        }
+    }
 
     private void OnDrawGizmos()
     {

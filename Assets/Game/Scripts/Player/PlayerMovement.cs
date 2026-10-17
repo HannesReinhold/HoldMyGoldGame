@@ -10,6 +10,13 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private Camera cam;
     [SerializeField] private float movementSpeed = 2.0f;
     [SerializeField] public float lookSensitivity = 1.0f;
+    private Vector3 knockback;
+
+    [Header("Knockback")]
+    public float knockbackDecelGround = 20f;
+    public float knockbackDecelAir = 4f;     // in der Luft weniger Reibung
+
+    [SerializeField] private float jumpHeight = 1.5f;
 
     private float xRotation = 0f;
 
@@ -63,22 +70,24 @@ public class PlayerMovement : MonoBehaviour
         if (!movementEnabled) return;
 
         grounded = controller.isGrounded;
-        if (grounded && velocity.y < 0)
-        {
+        if (grounded && velocity.y < 0f)
             velocity.y = -2f;
-        }
 
-        Vector2 movement = GetPlayerMovement();
-        Vector3 move = transform.right * movement.x + transform.forward * movement.y;
-        controller.Move(move * movementSpeed * Time.deltaTime);
+        // Springen (Taste gehalten = automatisch weiter springen)
+        if (grounded && inputActions.FPSController.Jump.IsPressed())
+            velocity.y = Mathf.Sqrt(-2f * gravity * jumpHeight);
 
         velocity.y += gravity * Time.deltaTime;
-        controller.Move(velocity * Time.deltaTime);
 
-        if (inputActions.FPSController.Jump.IsPressed())
-        {
-            Jump();
-        }
+        Vector2 input = GetPlayerMovement();
+        Vector3 move = (transform.right * input.x + transform.forward * input.y) * movementSpeed;
+
+        // Ein einziger Move: Laufen + Knockback + Vertikal
+        Vector3 total = move + knockback + Vector3.up * velocity.y;
+        controller.Move(total * Time.deltaTime);
+
+        float decel = grounded ? knockbackDecelGround : knockbackDecelAir;
+        knockback = Vector3.MoveTowards(knockback, Vector3.zero, decel * Time.deltaTime);
     }
 
     private void Jump()
@@ -87,6 +96,18 @@ public class PlayerMovement : MonoBehaviour
         {
             velocity.y = Mathf.Sqrt(-3f * gravity);
         }
+    }
+
+    public void AddKnockback(Vector3 impulse)
+    {
+        knockback = new Vector3(impulse.x, 0f, impulse.z);
+        velocity.y = impulse.y;   // nach oben wegschleudern
+    }
+
+    public void ResetMotion()
+    {
+        knockback = Vector3.zero;
+        velocity = Vector3.zero;
     }
 
     private void OnDisable()
