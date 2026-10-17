@@ -11,10 +11,12 @@ public class HudManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI Health;
     [SerializeField] private TextMeshProUGUI CountDown;
     private WorldManager worldManager;
+    private NetworkedPlayer playerData;
 
     void Start()
     {
-        worldManager = FindObjectOfType<WorldManager>();        
+        worldManager = FindObjectOfType<WorldManager>();
+        playerData = GameManager.Instance.localPlayer;
     }
 
     void Update()
@@ -34,7 +36,7 @@ public class HudManager : MonoBehaviour
         
         if (playerData != null)
         {
-            Health.text = playerData.health.ToString() + " | " + playerData.timesDied;
+            Health.text = playerData.health.Value.ToString() + " | " + playerData.timesDied;
         }
     }
 }
