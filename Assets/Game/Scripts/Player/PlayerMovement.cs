@@ -33,6 +33,13 @@ public class PlayerMovement : MonoBehaviour
     public bool movementEnabled;
     public bool playerEnabled;
 
+    private bool inputBlocked;
+
+    public void SetInputBlocked(bool blocked)
+    {
+        inputBlocked = blocked;
+    }
+
     private void Awake()
     {
         inputActions = new InputSystem();
@@ -56,7 +63,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void DoLooking()
     {
-        if (!playerEnabled) return;
+        if (!playerEnabled || inputBlocked) return;
 
         Vector2 looking = GetPlayerLook();
         float lookX = looking.x * lookSensitivity * Time.deltaTime;
@@ -78,11 +85,12 @@ public class PlayerMovement : MonoBehaviour
         if (grounded && velocity.y < 0f)
             velocity.y = -2f;
 
-        Vector2 input = GetPlayerMovement();
+        Vector2 input = inputBlocked ? Vector2.zero : GetPlayerMovement();
         float t = Mathf.Clamp01((float)networkedPlayer.GoldBarCount / maxItemsForSlowdown);
 
         // Springen (Taste gehalten = automatisch weiter springen)
-        if (grounded && inputActions.FPSController.Jump.IsPressed())
+        bool jumpHeld = !inputBlocked && inputActions.FPSController.Jump.IsPressed();
+        if (grounded && jumpHeld)
         {
             float processedJumpHeight = slowdownCurve.Evaluate(t) * jumpHeight;
             velocity.y = Mathf.Sqrt(-2f * gravity * processedJumpHeight);
@@ -102,16 +110,11 @@ public class PlayerMovement : MonoBehaviour
         knockback = Vector3.MoveTowards(knockback, Vector3.zero, decel * Time.deltaTime);
     }
 
-    private void Jump()
-    {
-        if (grounded)
-        {
-            velocity.y = Mathf.Sqrt(-3f * gravity);
-        }
-    }
-
     public void AddKnockback(Vector3 impulse)
     {
+        float t = Mathf.Clamp01((float)networkedPlayer.GoldBarCount / maxItemsForSlowdown);
+        float factor = slowdownCurve.Evaluate(t);
+        impulse *= factor;
         knockback = new Vector3(impulse.x, 0f, impulse.z);
         velocity.y = impulse.y;   // nach oben wegschleudern
     }

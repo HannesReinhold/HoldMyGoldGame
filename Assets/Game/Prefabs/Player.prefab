@@ -319,10 +319,15 @@ MonoBehaviour:
       MinSecondsBetweenUpdates: 0
       MaxSecondsBetweenUpdates: 0
     m_InternalValue: 10
+  interaction: {fileID: 9185180333716623163}
   timesDied: 0
   maxHealth: 4
   invulnerableTime: 0.5
   respawnLockTime: 1
+  goldItemPrefab: {fileID: 5400267961435067128, guid: 635f6f53a75e2a545a56cb6e05ef25c8, type: 3}
+  dropFraction: 1
+  maxDroppedItems: 100
+  scatterForce: 0.5
 --- !u!114 &6121316786019787671
 MonoBehaviour:
   m_ObjectHideFlags: 0

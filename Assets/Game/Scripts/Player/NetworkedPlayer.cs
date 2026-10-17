@@ -27,8 +27,10 @@ public class NetworkedPlayer : NetworkBehaviour
             10,
             NetworkVariableReadPermission.Everyone,
             NetworkVariableWritePermission.Server
-        );
+        ); // TODO set to 0
     public int GoldBarCount => itemCount.Value;
+
+    public NetworkedPlayerInteraction interaction;
 
 
     [SerializeField] public int timesDied = 0;
@@ -40,6 +42,12 @@ public class NetworkedPlayer : NetworkBehaviour
 
     private float lastHitTime = -10f;
     private float lastRespawnTime = -10f;
+
+    [Header("Death Drop")]
+    public NetworkObject goldItemPrefab;            // dasselbe Prefab wie beim Werfen
+    [Range(0f, 1f)] public float dropFraction = 1f; // 1 = alles, 0.5 = die Hälfte
+    public int maxDroppedItems = 100;                // Obergrenze physischer Items
+    public float scatterForce = 2f;
 
     public override void OnNetworkSpawn()
     {
@@ -163,6 +171,7 @@ public class NetworkedPlayer : NetworkBehaviour
 
         if (health.Value <= 0)
         {
+            DropGoldOnDeath();
             Kill();
             return;
         }
@@ -178,8 +187,42 @@ public class NetworkedPlayer : NetworkBehaviour
         lastRespawnTime = Time.time;
         timesDied++;
         health.Value = maxHealth;
+        itemCount.Value = 0;
 
         RespawnClientRpc(OwnerOnly());
+    }
+
+    private void DropGoldOnDeath()
+    {
+        if (goldItemPrefab == null) return;
+
+        int amount = Mathf.Min(Mathf.CeilToInt(itemCount.Value * dropFraction), maxDroppedItems);
+
+        for (int i = 0; i < amount; i++)
+        {
+            Vector2 circle = Random.insideUnitCircle;
+            Vector3 pos = transform.position + Vector3.up * 1f + new Vector3(circle.x, 0f, circle.y) * 0.5f;
+
+            NetworkObject item = Instantiate(goldItemPrefab, pos, Random.rotation);
+
+            if (item.TryGetComponent(out Rigidbody rb))
+            {
+                Vector3 dir = new Vector3(circle.x, 0.6f, circle.y).normalized;
+                rb.AddForce(dir * scatterForce, ForceMode.Impulse);
+            }
+
+            item.Spawn();
+        }
+    }
+
+    public void SetControlsBlocked(bool blocked)
+    {
+        if (!IsOwner) return;
+
+        playerMovement.SetInputBlocked(blocked);
+
+        if (interaction != null)
+            interaction.enableInteractions = !blocked;
     }
 
     private ClientRpcParams OwnerOnly() => new ClientRpcParams

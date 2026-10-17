@@ -130,14 +130,6 @@ public class GameManager : NetworkBehaviour
             return;
         }
 
-        Debug.Log("Pause Game");
-        
-        if (stage.Value == GameStage.COUNTDOWN || stage.Value == GameStage.PLAY)
-        {
-            stageBeforePause = stage.Value;
-            SetStage(GameStage.PAUSED);
-        }
-
         MenuManager.Instance.OpenPauseMenu();
     }
 

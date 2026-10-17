@@ -297,6 +297,8 @@ public class MenuManager : MonoBehaviour
             lobbyMenu.SetActive(false);
 
         HideHud();
+
+        SetPlayerControlsBlocked(true);
     }
 
     public void ClosePauseMenu()
@@ -307,6 +309,8 @@ public class MenuManager : MonoBehaviour
             pauseMenu.SetActive(false);
 
         ShowHud();
+
+        SetPlayerControlsBlocked(false);
     }
 
     public void DisableMenu()
@@ -352,5 +356,12 @@ public class MenuManager : MonoBehaviour
 
         if (pauseMenu != null)
             pauseMenu.SetActive(false);
+    }
+
+    private void SetPlayerControlsBlocked(bool blocked)
+    {
+        var player = GameManager.Instance != null ? GameManager.Instance.localPlayer : null;
+        if (player != null)
+            player.SetControlsBlocked(blocked);
     }
 }
