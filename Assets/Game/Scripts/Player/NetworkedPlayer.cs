@@ -136,6 +136,9 @@ public class NetworkedPlayer : NetworkBehaviour
 
         if (cc != null) cc.enabled = true;
         Physics.SyncTransforms();
+
+        playerMovement.ResetMotion();
+        playerMovement.ResetLook();
     }
 
     public void TakeDamage(int amount, Vector3 knockbackImpulse)

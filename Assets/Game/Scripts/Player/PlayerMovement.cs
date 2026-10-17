@@ -110,6 +110,12 @@ public class PlayerMovement : MonoBehaviour
         velocity = Vector3.zero;
     }
 
+    public void ResetLook()
+    {
+        xRotation = 0f;
+        cam.transform.localRotation = Quaternion.identity;
+    }
+
     private void OnDisable()
     {
         inputActions.Disable();

@@ -7,7 +7,7 @@ public class ItemHitDamage : NetworkBehaviour
     public float knockbackForce = 8f;
     public float upwardBoost = 0.4f;     // Anteil von knockbackForce nach oben
     public float minImpactSpeed = 3f;    // liegende/rollende Items machen keinen Schaden
-    public float ignoreAfterSpawn = 0.3f; // Wurf trifft nicht sofort den Werfer
+    public float ignoreAfterSpawn = 0.1f; // Wurf trifft nicht sofort den Werfer
 
     private float spawnTime;
 

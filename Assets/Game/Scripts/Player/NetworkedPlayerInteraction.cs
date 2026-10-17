@@ -19,7 +19,21 @@ public class NetworkedPlayerInteraction : NetworkBehaviour
     public float dropUpOffset = 0.3f;
     public LayerMask locationLayers = 0;
 
+    [Header("Throw Charge")]
+    public float maxChargeTime = 1.5f;      // maximale Haltedauer in Sekunden
+    public float tapThreshold = 0.15f;      // darunter = nur fallen lassen (normalisiert 0..1)
+    public float minThrowForce = 2f;        // Kraft knapp über dem Tap-Bereich
     public float throwForce = 10;
+    public bool autoThrowAtMax = false;     // true = bei voller Ladung automatisch werfen
+
+    private bool isCharging;
+    private float chargeStartTime;
+
+    // für Animation, Ladebalken usw.
+    public bool IsCharging => isCharging;
+    public float Charge01 => isCharging
+        ? Mathf.Clamp01((Time.time - chargeStartTime) / maxChargeTime)
+        : 0f;
 
     private InputSystem inputActions;
 
@@ -50,7 +64,8 @@ public class NetworkedPlayerInteraction : NetworkBehaviour
 
         inputActions = new InputSystem();
         inputActions.FPSController.PickUp.performed += OnPickupItem;
-        inputActions.FPSController.Drop.performed += OnDropItem;
+        inputActions.FPSController.Drop.started += OnDropStarted;
+        inputActions.FPSController.Drop.canceled += OnDropCanceled;
         inputActions.Enable();
     }
 
@@ -60,7 +75,8 @@ public class NetworkedPlayerInteraction : NetworkBehaviour
 
         if (inputActions != null)
         {
-            inputActions.FPSController.Drop.performed -= OnPickupItem;
+            inputActions.FPSController.Drop.started -= OnDropStarted;
+            inputActions.FPSController.Drop.canceled -= OnDropCanceled;
             inputActions.FPSController.PickUp.performed -= OnPickupItem;
             inputActions.Disable();
             inputActions.Dispose();
@@ -93,6 +109,18 @@ public class NetworkedPlayerInteraction : NetworkBehaviour
             if (currentSelectedItem != null)
                 currentSelectedItem.SetHighlight(false);
         }*/
+
+        if (!IsOwner || !isCharging) return;
+
+        // Laden abbrechen, wenn Interaktionen gesperrt werden (z. B. Pause)
+        if (!enableInteractions)
+        {
+            isCharging = false;
+            return;
+        }
+
+        if (autoThrowAtMax && Time.time - chargeStartTime >= maxChargeTime)
+            ReleaseThrow();
     }
 
 
@@ -137,24 +165,38 @@ public class NetworkedPlayerInteraction : NetworkBehaviour
     }
 
 
-    private void OnDropItem(InputAction.CallbackContext context)
+    private void OnDropStarted(InputAction.CallbackContext context)
     {
-        Debug.Log("Try to drop item");
+        if (!IsOwner || !IsSpawned || !enableInteractions) return;
+        if (GoldBarCount <= 0) return;
 
-        if (GoldBarCount > 0)
+        // In einer Dropzone wird sofort eingezahlt, nie geworfen
+        DropZone zone = FindNearest<DropZone>();
+        if (zone != null)
         {
-            Debug.Log("Drop Item");
-
-            DropZone zone = FindNearest<DropZone>();
-            if (zone != null)
-            {
-                DepositToDropZoneServerRpc(zone.NetworkObject);
-                return;   // in einer Zone wird nie physisch geworfen
-            }
-
-            Vector3 throwDirection = playerCamera.transform.forward;
-            DropItemServerRpc(throwDirection);
+            DepositToDropZoneServerRpc(zone.NetworkObject);
+            return;
         }
+
+        isCharging = true;
+        chargeStartTime = Time.time;
+    }
+
+    private void OnDropCanceled(InputAction.CallbackContext context)
+    {
+        ReleaseThrow();
+    }
+
+    private void ReleaseThrow()
+    {
+        if (!isCharging) return;
+
+        float charge = Charge01;
+        isCharging = false;
+
+        if (!IsOwner || GoldBarCount <= 0) return;
+
+        DropItemServerRpc(playerCamera.transform.forward, charge);
     }
 
     private T FindNearest<T>() where T : NetworkBehaviour
@@ -207,7 +249,7 @@ public class NetworkedPlayerInteraction : NetworkBehaviour
     }
 
     [ServerRpc]
-    private void DropItemServerRpc(Vector3 throwDirection, ServerRpcParams rpcParams = default)
+    private void DropItemServerRpc(Vector3 throwDirection, float charge01, ServerRpcParams rpcParams = default)
     {
         if (rpcParams.Receive.SenderClientId != OwnerClientId)
             return;
@@ -215,40 +257,28 @@ public class NetworkedPlayerInteraction : NetworkBehaviour
         if (itemCount.Value <= 0 || itemPrefab == null)
             return;
 
+        // Client-Werten nie trauen
+        charge01 = Mathf.Clamp01(charge01);
+        throwDirection = throwDirection.sqrMagnitude > 0.001f ? throwDirection.normalized : transform.forward;
 
-        Vector3 forward = transform.forward;
-
-        Vector3 spawnPosition;
-
-        if (dropPosition != null)
+        float force = 0f;
+        if (charge01 >= tapThreshold)
         {
-            spawnPosition = dropPosition.position;
-        }
-        else
-        {
-            spawnPosition = transform.position + forward * dropForwardOffset + Vector3.up * dropUpOffset;
+            float t = (charge01 - tapThreshold) / (1f - tapThreshold);
+            force = Mathf.Lerp(minThrowForce, throwForce, t);
         }
 
-        Quaternion spawnRotation = Quaternion.identity;
+        Vector3 spawnPosition = dropPosition != null
+            ? dropPosition.position
+            : transform.position + transform.forward * dropForwardOffset + Vector3.up * dropUpOffset;
 
-        NetworkObject droppedItem = Instantiate( itemPrefab, spawnPosition, spawnRotation);
+        NetworkObject droppedItem = Instantiate(itemPrefab, spawnPosition, Quaternion.identity);
 
-        // apply force
-        Rigidbody rb = droppedItem.GetComponent<Rigidbody>();
-        if (rb != null)
-        {
-            Vector3 force =
-                throwDirection * throwForce;
-
-            rb.AddForce(force, ForceMode.Impulse);
-        }
-
+        if (force > 0f && droppedItem.TryGetComponent(out Rigidbody rb))
+            rb.AddForce(throwDirection * force, ForceMode.Impulse);
 
         droppedItem.Spawn();
 
-        Debug.Log("Drop Item on server");
-
-        // Only consume inventory after successful spawning.
         itemCount.Value--;
     }
 

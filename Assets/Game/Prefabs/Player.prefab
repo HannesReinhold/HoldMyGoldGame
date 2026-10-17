@@ -130,7 +130,6 @@ GameObject:
   - component: {fileID: 6121316786019787671}
   - component: {fileID: 242171729201180907}
   - component: {fileID: 9185180333716623163}
-  - component: {fileID: 233551939797771058}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -310,6 +309,15 @@ MonoBehaviour:
       MinSecondsBetweenUpdates: 0
       MaxSecondsBetweenUpdates: 0
     m_InternalValue: -1
+  health:
+    UpdateTraits:
+      MinSecondsBetweenUpdates: 0
+      MaxSecondsBetweenUpdates: 0
+    m_InternalValue: 4
+  timesDied: 0
+  maxHealth: 4
+  invulnerableTime: 0.5
+  respawnLockTime: 1
 --- !u!114 &6121316786019787671
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -325,6 +333,9 @@ MonoBehaviour:
   cam: {fileID: 5340447060612071793}
   movementSpeed: 4
   lookSensitivity: 5
+  knockbackDecelGround: 20
+  knockbackDecelAir: 4
+  jumpHeight: 1.5
   gravity: -9.81
   movementEnabled: 0
   playerEnabled: 1
@@ -400,22 +411,12 @@ MonoBehaviour:
   locationLayers:
     serializedVersion: 2
     m_Bits: 64
-  throwForce: 25
+  maxChargeTime: 1.5
+  tapThreshold: 0.15
+  minThrowForce: 2
+  throwForce: 50
+  autoThrowAtMax: 0
   enableInteractions: 1
---- !u!114 &233551939797771058
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2571872415284446001}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 69926c84d57f231b2b5291470f001d47, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: '::'
-  health: 4
-  timesDied: 0
 --- !u!1 &5731507008725031861
 GameObject:
   m_ObjectHideFlags: 0
@@ -475,7 +476,7 @@ Transform:
   m_GameObject: {fileID: 7550254050635311613}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.65, z: 0}
+  m_LocalPosition: {x: 0, y: 0.481, z: 0.363}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -512,7 +513,7 @@ Camera:
     y: 0
     width: 1
     height: 1
-  near clip plane: 0.5
+  near clip plane: 0.18
   far clip plane: 1000
   field of view: 60
   orthographic: 0

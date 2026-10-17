@@ -129,7 +129,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 4281013405
+  GlobalObjectIdHash: 617426962
   InScenePlacedSourceGlobalObjectIdHash: 803586384
   m_InScenePlacedDisabledByDefault: 0
   DeferredDespawnTick: 0
@@ -214,9 +214,9 @@ Rigidbody:
   m_ImplicitTensor: 1
   m_UseGravity: 1
   m_IsKinematic: 0
-  m_Interpolate: 0
+  m_Interpolate: 1
   m_Constraints: 0
-  m_CollisionDetection: 0
+  m_CollisionDetection: 1
 --- !u!114 &3838041844361808284
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -246,5 +246,5 @@ MonoBehaviour:
   damage: 1
   knockbackForce: 8
   upwardBoost: 0.4
-  minImpactSpeed: 3
-  ignoreAfterSpawn: 0.3
+  minImpactSpeed: 5
+  ignoreAfterSpawn: 0.1
