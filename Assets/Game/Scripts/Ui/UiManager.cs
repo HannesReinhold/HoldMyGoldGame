@@ -33,7 +33,7 @@ public class UiManager : MonoBehaviour
         
         if (playerData != null)
         {
-            Health.text = playerData.health.ToString();
+            Health.text = playerData.health.ToString() + " | " + playerData.timesDied;
         }
     }
 }
