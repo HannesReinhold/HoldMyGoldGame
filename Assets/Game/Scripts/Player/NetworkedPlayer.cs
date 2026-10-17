@@ -34,6 +34,7 @@ public class NetworkedPlayer : NetworkBehaviour
         }
 
         if (IsOwner) SetEnablePlayerCamera(true);
+        else playerCamera.enabled = false;
         playerMovement.SetEnableMovement(IsOwner);
         playerMovement.SetEnablePlayer(IsOwner);
 
