@@ -35,7 +35,7 @@ public class NetworkedPlayer : NetworkBehaviour
 
         SetEnablePlayerCamera(IsOwner);
         playerMovement.SetEnableMovement(IsOwner);
-        playerMovement.SetEnablePlayer(IsOwner);
+        playerMovement.SetEnablePlayer(IsOwner, IsOwner);
 
 
         // Disable other stuff from the other player on this client

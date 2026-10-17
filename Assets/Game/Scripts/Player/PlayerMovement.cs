@@ -109,10 +109,12 @@ public class PlayerMovement : MonoBehaviour
         movementEnabled = enabled;
     }
 
-    public void SetEnablePlayer(bool enabled)
+    public void SetEnablePlayer(bool enabled, bool isOwner)
     {
         playerEnabled = enabled;
 
+
+        if (!isOwner) return;
         if(enabled)
         {
             Cursor.lockState = CursorLockMode.Locked;
