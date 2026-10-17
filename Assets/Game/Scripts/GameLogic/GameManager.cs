@@ -1,3 +1,5 @@
+using System;
+using Game.Scripts.GameLogic;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -10,6 +12,11 @@ public class GameManager : MonoBehaviour
     private InputSystem inputActions;
 
     public NetworkedPlayer localPlayer;
+    
+    public event Action<GameStage, GameStage> StageChanged;
+
+    public GameStage stage { get; private set; } = GameStage.NONE;
+    private GameStage stageBeforePause = GameStage.NONE;
 
     public static GameManager Instance { get; private set; }
 
@@ -25,16 +32,69 @@ public class GameManager : MonoBehaviour
 
         DontDestroyOnLoad(gameObject);
 
-        // input 
+        // input
         inputActions = new InputSystem();
-        inputActions.FPSController.PauseMenu.performed += PauseGame;
+        inputActions.FPSController.PauseMenu.performed += OnPauseInput;
         inputActions.Enable();
     }
 
-
-    public void PauseGame(InputAction.CallbackContext context)
+    private void Start()
     {
+        MenuManager.Instance.OpenMainMenu();
+        SetStage(GameStage.NONE);
+    }
+
+    public void SetStage(GameStage next)
+    {
+        if (stage == next)
+        {
+            return;
+        }
+
+        GameStage old = stage;
+        stage = next;
+        StageChanged?.Invoke(old, next);
+    }
+    
+    public void EnterLobby() => SetStage(GameStage.JOIN);
+    
+    public void StartSession()
+    {
+        if (stage != GameStage.JOIN)
+        {
+            return;
+        }
+        
+        SetStage(GameStage.COUNTDOWN);
+    }
+
+    private void OnPauseInput(InputAction.CallbackContext context)
+    {
+        if (stage == GameStage.PAUSED)
+        {
+            ResumeGame();
+        }
+        else
+        {
+            PauseGame();
+        }
+    }
+
+    public void PauseGame()
+    {
+        if (stage == GameStage.NONE)
+        {
+            return;
+        }
+
         Debug.Log("Pause Game");
+        
+        if (stage == GameStage.COUNTDOWN || stage == GameStage.PLAY)
+        {
+            stageBeforePause = stage;
+            SetStage(GameStage.PAUSED);
+        }
+
         MenuManager.Instance.OpenPauseMenu();
     }
 
@@ -42,26 +102,21 @@ public class GameManager : MonoBehaviour
     {
         Debug.Log("Resume Game");
         MenuManager.Instance.ClosePauseMenu();
+
+        if (stage == GameStage.PAUSED)
+        {
+            SetStage(stageBeforePause);
+        }
     }
-
-
-    public void StartSession()
-    {
-
-    }
-
+    
     public void LeaveGame()
     {
         Debug.Log("Leave Game...");
         ServerDiscoveryManager.Instance.Disconnect();
 
+        SetStage(GameStage.NONE);
         SceneManager.LoadScene("Networking");
 
-        MenuManager.Instance.OpenMainMenu();
-    }
-
-    private void Start()
-    {
         MenuManager.Instance.OpenMainMenu();
     }
 }

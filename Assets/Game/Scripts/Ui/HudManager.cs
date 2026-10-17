@@ -4,16 +4,18 @@ using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.UIElements;
 
-public class UiManager : MonoBehaviour
+public class HudManager : MonoBehaviour
 {
     
     [SerializeField] private TextMeshProUGUI Timer;
     [SerializeField] private TextMeshProUGUI Health;
+    [SerializeField] private TextMeshProUGUI CountDown;
+    private WorldManager worldManager;
     private PlayerData playerData;
 
     void Start()
     {
-        
+        worldManager = FindObjectOfType<WorldManager>();        
     }
 
     void Update()
@@ -22,7 +24,7 @@ public class UiManager : MonoBehaviour
         
         float minutes = Mathf.FloorToInt(time / 60);  
         float seconds = Mathf.FloorToInt(time % 60);
-
+        
         Timer.text = string.Format("{0:00}:{1:00}", minutes, seconds);
 
         if (playerData == null) // for some reason it's null when initialized in #Start ...
