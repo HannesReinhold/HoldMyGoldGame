@@ -16,6 +16,7 @@ public class NetworkedPlayerInteraction : NetworkBehaviour
     public LayerMask pickupLayers = 0;
     public float dropForwardOffset = 1.5f;
     public float dropUpOffset = 0.3f;
+    public LayerMask locationLayers = 0;
 
     public float throwForce = 10;
 
@@ -76,7 +77,7 @@ public class NetworkedPlayerInteraction : NetworkBehaviour
 
     private void Update()
     {
-        Ray ray = new Ray(playerCamera.transform.position, playerCamera.transform.forward);
+        /*Ray ray = new Ray(playerCamera.transform.position, playerCamera.transform.forward);
 
         if (Physics.Raycast(ray, out RaycastHit hit, pickupRange, pickupLayers, QueryTriggerInteraction.Ignore))
         {
@@ -90,7 +91,7 @@ public class NetworkedPlayerInteraction : NetworkBehaviour
         {
             if (currentSelectedItem != null)
                 currentSelectedItem.SetHighlight(false);
-        }
+        }*/
     }
 
 
@@ -100,6 +101,21 @@ public class NetworkedPlayerInteraction : NetworkBehaviour
             return;
 
         Debug.Log("Try to pickup item");
+
+        DropZone dropZone = FindNearest<DropZone>();
+        PickupLocation pickupLoc = FindNearest<PickupLocation>();
+
+        if (dropZone != null && (pickupLoc == null || SqrDistTo(dropZone) <= SqrDistTo(pickupLoc)))
+        {
+            TakeFromDropZoneServerRpc(dropZone.NetworkObject);
+            return;
+        }
+
+        if (pickupLoc != null)
+        {
+            PickupFromLocationServerRpc(pickupLoc.NetworkObject);
+            return;
+        }
 
         // CHeck if item in front of player cam
         Ray ray = new Ray(playerCamera.transform.position, playerCamera.transform.forward);
@@ -127,10 +143,40 @@ public class NetworkedPlayerInteraction : NetworkBehaviour
         if (GoldBarCount > 0)
         {
             Debug.Log("Drop Item");
+
+            DropZone zone = FindNearest<DropZone>();
+            if (zone != null)
+            {
+                DepositToDropZoneServerRpc(zone.NetworkObject);
+                return;   // in einer Zone wird nie physisch geworfen
+            }
+
             Vector3 throwDirection = playerCamera.transform.forward;
             DropItemServerRpc(throwDirection);
         }
     }
+
+    private T FindNearest<T>() where T : NetworkBehaviour
+    {
+        Collider[] hits = Physics.OverlapSphere(
+            transform.position, pickupRange, locationLayers, QueryTriggerInteraction.Collide);
+
+        T nearest = null;
+        float best = float.MaxValue;
+
+        foreach (var h in hits)
+        {
+            var c = h.GetComponentInParent<T>();
+            if (c == null || !c.IsSpawned) continue;
+
+            float d = (c.transform.position - transform.position).sqrMagnitude;
+            if (d < best) { best = d; nearest = c; }
+        }
+        return nearest;
+    }
+
+    private float SqrDistTo(Component c) =>
+        (c.transform.position - transform.position).sqrMagnitude;
 
 
 
@@ -203,6 +249,72 @@ public class NetworkedPlayerInteraction : NetworkBehaviour
 
         // Only consume inventory after successful spawning.
         itemCount.Value--;
+    }
+
+    [ServerRpc]
+    private void PickupFromLocationServerRpc(NetworkObjectReference locationRef, ServerRpcParams rpcParams = default)
+    {
+        if (rpcParams.Receive.SenderClientId != OwnerClientId)
+            return;
+
+        if (!locationRef.TryGet(out NetworkObject locObj))
+            return;
+
+        var location = locObj.GetComponent<PickupLocation>();
+        if (location == null)
+            return;
+
+        Collider col = locObj.GetComponent<Collider>();
+        Vector3 closest = col.ClosestPoint(transform.position);
+
+        if (Vector3.Distance(transform.position, closest) > pickupRange + 1f)
+            return;
+
+        int amount = location.TryTake();
+        if (amount > 0)
+            itemCount.Value += amount;
+    }
+
+    [ServerRpc]
+    private void DepositToDropZoneServerRpc(NetworkObjectReference zoneRef, ServerRpcParams rpcParams = default)
+    {
+        if (rpcParams.Receive.SenderClientId != OwnerClientId) return;
+        if (!zoneRef.TryGet(out NetworkObject zoneObj)) return;
+
+        var zone = zoneObj.GetComponent<DropZone>();
+        if (zone == null) return;
+
+        Collider col = zoneObj.GetComponent<Collider>();
+        Vector3 closest = col.ClosestPoint(transform.position);
+
+        if (Vector3.Distance(transform.position, closest) > pickupRange + 1f)
+            return;
+
+        int amount = itemCount.Value;
+        if (amount <= 0) return;
+
+        zone.Deposit(amount);
+        itemCount.Value = 0;
+    }
+
+    [ServerRpc]
+    private void TakeFromDropZoneServerRpc(NetworkObjectReference zoneRef, ServerRpcParams rpcParams = default)
+    {
+        if (rpcParams.Receive.SenderClientId != OwnerClientId) return;
+        if (!zoneRef.TryGet(out NetworkObject zoneObj)) return;
+
+        var zone = zoneObj.GetComponent<DropZone>();
+        if (zone == null) return;
+
+        Collider col = zoneObj.GetComponent<Collider>();
+        Vector3 closest = col.ClosestPoint(transform.position);
+
+        if (Vector3.Distance(transform.position, closest) > pickupRange + 1f)
+            return;
+
+        int amount = zone.Take();
+        if (amount > 0)
+            itemCount.Value += amount;
     }
 }
 

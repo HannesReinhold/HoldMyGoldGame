@@ -24,8 +24,6 @@ public class PlayerMovement : MonoBehaviour
     private void Awake()
     {
         inputActions = new InputSystem();
-        inputActions.FPSController.PauseMenu.performed += ctx => PauseGame();
-        inputActions.FPSController.Jump.performed += ctx => Jump();
     }
     private void Start()
     {
@@ -76,19 +74,19 @@ public class PlayerMovement : MonoBehaviour
 
         velocity.y += gravity * Time.deltaTime;
         controller.Move(velocity * Time.deltaTime);
+
+        if (inputActions.FPSController.Jump.IsPressed())
+        {
+            Jump();
+        }
     }
 
     private void Jump()
     {
         if (grounded)
         {
-            velocity.y = Mathf.Sqrt(-2f * gravity);
+            velocity.y = Mathf.Sqrt(-3f * gravity);
         }
-    }
-
-    private void PauseGame()
-    {
-        //GameManager.Instance.PauseGame();
     }
 
     private void OnDisable()
