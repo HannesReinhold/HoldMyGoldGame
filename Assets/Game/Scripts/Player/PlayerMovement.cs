@@ -1,7 +1,7 @@
 using Unity.Netcode;
 using UnityEngine;
 
-public class PlayerMovement : NetworkBehaviour
+public class PlayerMovement : MonoBehaviour
 {
     private InputSystem inputActions;
 
@@ -18,6 +18,9 @@ public class PlayerMovement : NetworkBehaviour
     public float gravity = -9.81f;
     private bool grounded;
 
+    public bool movementEnabled;
+    public bool playerEnabled;
+
     private void Awake()
     {
         inputActions = new InputSystem();
@@ -27,8 +30,6 @@ public class PlayerMovement : NetworkBehaviour
     private void Start()
     {
         controller = GetComponent<CharacterController>();
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
     }
 
     private void OnEnable()
@@ -38,15 +39,15 @@ public class PlayerMovement : NetworkBehaviour
 
     private void Update()
     {
-        if (IsOwner)
-        {
-            DoMovement();
-            DoLooking();
-        }
+        
+        DoMovement();
+        DoLooking();
     }
 
     private void DoLooking()
     {
+        if (!playerEnabled) return;
+
         Vector2 looking = GetPlayerLook();
         float lookX = looking.x * lookSensitivity * Time.deltaTime;
         float lookY = looking.y * lookSensitivity * Time.deltaTime;
@@ -61,6 +62,8 @@ public class PlayerMovement : NetworkBehaviour
 
     private void DoMovement()
     {
+        if (!movementEnabled) return;
+
         grounded = controller.isGrounded;
         if (grounded && velocity.y < 0)
         {
@@ -101,5 +104,26 @@ public class PlayerMovement : NetworkBehaviour
     public Vector2 GetPlayerLook()
     {
         return inputActions.FPSController.Look.ReadValue<Vector2>();
+    }
+
+    public void EnableMovement(bool enabled)
+    {
+        movementEnabled = enabled;
+    }
+
+    public void EnablePlayer(bool enabled)
+    {
+        playerEnabled = enabled;
+
+        if(enabled)
+        {
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+        }
+        else
+        {
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+        }
     }
 }
