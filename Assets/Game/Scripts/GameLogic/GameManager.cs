@@ -65,8 +65,8 @@ public class GameManager : NetworkBehaviour
     {
         stage.OnValueChanged += (oldVal, newVal) => StageChanged?.Invoke(oldVal, newVal);
 
-        if (IsServer)
-            stage.Value = GameStage.NONE;
+        // if (IsServer)
+        //     stage.Value = GameStage.NONE;
     }
 
     public override void OnNetworkDespawn()
@@ -159,4 +159,5 @@ public class GameManager : NetworkBehaviour
     {
         worldManager.Update();
     }
+    
 }

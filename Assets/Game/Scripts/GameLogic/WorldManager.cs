@@ -44,6 +44,7 @@ public class WorldManager
                 {
                     GameManager.Instance.SetStage(GameStage.JOIN);
                 }
+                
                 break;
         }
     }

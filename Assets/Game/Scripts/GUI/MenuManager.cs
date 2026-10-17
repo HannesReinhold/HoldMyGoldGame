@@ -6,6 +6,7 @@ using TMPro;
 
 public class MenuManager : MonoBehaviour
 {
+    
     [Header("Menu References")]
     public GameObject menuCam;
     public GameObject canvas;
@@ -20,6 +21,11 @@ public class MenuManager : MonoBehaviour
     [SerializeField] private TMP_Text joinCodeDisplayText;
     [SerializeField] private TMP_InputField joinCodeInput;
     [SerializeField] private GameObject joinFoundGameButton;
+    
+    [Header("Scoreboard")]
+    public TextMeshProUGUI Result;
+    public TextMeshProUGUI HighScore;
+    public TextMeshProUGUI LowScore;
 
     public static MenuManager Instance { get; private set; }
 
@@ -96,6 +102,9 @@ public class MenuManager : MonoBehaviour
     {
         if (oldStage == GameStage.PLAY && newStage == GameStage.JOIN)
         {
+            EnableMenu();
+            ScoreEvaluator.Evaluate(this);
+            lobbyMenu.SetActive(false);
             scoreboard.SetActive(true);
             HideHud();
         }
@@ -103,6 +112,7 @@ public class MenuManager : MonoBehaviour
 
     public void onPlayAgain()
     {
+         DisableMenu();
          scoreboard.SetActive(false);
          ShowHud();
     }
