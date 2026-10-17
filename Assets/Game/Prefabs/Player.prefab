@@ -528,6 +528,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 949799104741543003}
     m_Modifications:
+    - target: {fileID: 2494821396171859097, guid: 53d400b9ba765294a849519b33520be4, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: 072327cfa359e4742890afbf55d0cf7f, type: 2}
     - target: {fileID: 4626826557796640429, guid: 53d400b9ba765294a849519b33520be4, type: 3}
       propertyPath: m_LocalPosition.x
       value: -0.272
@@ -675,10 +679,18 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 9166125617791607897, guid: 53d400b9ba765294a849519b33520be4, type: 3}
       insertIndex: -1
       addedObject: {fileID: 4807322748529489458}
+    - targetCorrespondingSourceObject: {fileID: 9166125617791607897, guid: 53d400b9ba765294a849519b33520be4, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8992925157191374593}
   m_SourcePrefab: {fileID: 100100000, guid: 53d400b9ba765294a849519b33520be4, type: 3}
 --- !u!4 &1597494566511399661 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2191348686980463455, guid: 53d400b9ba765294a849519b33520be4, type: 3}
+  m_PrefabInstance: {fileID: 595122614548720050}
+  m_PrefabAsset: {fileID: 0}
+--- !u!95 &3088675540419497259 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 2494821396171859097, guid: 53d400b9ba765294a849519b33520be4, type: 3}
   m_PrefabInstance: {fileID: 595122614548720050}
   m_PrefabAsset: {fileID: 0}
 --- !u!4 &5683179670044571755 stripped
@@ -713,6 +725,20 @@ MonoBehaviour:
   maxBonePitch: 70
   cameraFollowsHead: 1
   cameraOffset: {x: 0, y: 0.05, z: 0.1}
+--- !u!114 &8992925157191374593
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8608299124882263531}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 36548fd1d3fa89d4bbc469aca35a467e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerAnimation
+  animator: {fileID: 3088675540419497259}
+  damping: 0.1
 --- !u!4 &8952314789344417617 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8394514009489145571, guid: 53d400b9ba765294a849519b33520be4, type: 3}
