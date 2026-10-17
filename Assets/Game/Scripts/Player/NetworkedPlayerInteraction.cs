@@ -23,6 +23,8 @@ public class NetworkedPlayerInteraction : NetworkBehaviour
 
     public bool enableInteractions;
 
+    private PickableItem currentSelectedItem;
+
 
     // item numbers
     private NetworkVariable<int> itemCount = new NetworkVariable<int>(
@@ -72,8 +74,27 @@ public class NetworkedPlayerInteraction : NetworkBehaviour
         // TODO Update Inventory GUI
     }
 
+    private void Update()
+    {
+        Ray ray = new Ray(playerCamera.transform.position, playerCamera.transform.forward);
 
-    private void OnPickupItem(InputAction.CallbackContext context)
+        if (Physics.Raycast(ray, out RaycastHit hit, pickupRange, pickupLayers, QueryTriggerInteraction.Ignore))
+        {
+            Debug.Log("Item in Range" + hit.collider.gameObject);
+
+            PickableItem item = hit.collider.GetComponentInParent<PickableItem>();
+            currentSelectedItem = item;
+            item.SetHighlight(true);
+        }
+        else
+        {
+            if (currentSelectedItem != null)
+                currentSelectedItem.SetHighlight(false);
+        }
+    }
+
+
+        private void OnPickupItem(InputAction.CallbackContext context)
     {
         if (!IsOwner || !IsSpawned || !enableInteractions)
             return;

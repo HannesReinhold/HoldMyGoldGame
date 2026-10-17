@@ -9,6 +9,8 @@ public class MenuManager : MonoBehaviour
     public GameObject lobbyMenu;
     public GameObject pauseMenu;
 
+    public GameObject hud;
+
 
     public static MenuManager Instance { get; private set; }
 
@@ -28,27 +30,38 @@ public class MenuManager : MonoBehaviour
     public void OnHostPressed()
     {
         CloseMainMenu();
-
+        ShowHud();
         ServerManager.Instance.Host();
     }
 
     public void OnJoinPressed()
     {
         CloseMainMenu();
-
+        ShowHud();
         ServerManager.Instance.Join();
     }
 
     public void OnLeavePressed()
     {
         CloseMainMenu();
-
+        HideHud();
         GameManager.Instance.LeaveGame();
     }
 
     public void OnResumeGamePressed()
     {
         GameManager.Instance.ResumeGame();
+        ShowHud();
+    }
+
+    public void ShowHud()
+    {
+        hud.SetActive(true);
+    }
+
+    public void HideHud()
+    {
+        hud.SetActive(false);
     }
 
     public void OpenMainMenu()
@@ -56,6 +69,7 @@ public class MenuManager : MonoBehaviour
         Debug.Log("Open Main Menu");
         OpenLobbyMenu();
         EnableMenu();
+        HideHud();
     }
 
     public void CloseMainMenu()
@@ -70,6 +84,7 @@ public class MenuManager : MonoBehaviour
         EnableMenu();
         pauseMenu.SetActive(true);
         lobbyMenu.SetActive(false);
+        HideHud();
     }
 
     public void ClosePauseMenu()
