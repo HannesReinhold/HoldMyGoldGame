@@ -1,5 +1,4 @@
-
-using Unity.Netcode;
+using Game.Scripts.GameLogic;
 using UnityEngine;
 using TMPro;
 
@@ -34,6 +33,11 @@ public class MenuManager : MonoBehaviour
 
     private void Start()
     {
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.StageChanged += OnStageChanged;
+        }
+        
         discoveryManager = ServerDiscoveryManager.Instance;
 
         if (discoveryManager == null)
@@ -53,8 +57,16 @@ public class MenuManager : MonoBehaviour
         if (discoveryManager != null)
             discoveryManager.OnHostDiscovered -= OnHostDiscovered;
 
+        if (GameManager.Instance != null)
+            GameManager.Instance.StageChanged -= OnStageChanged;
+
         if (Instance == this)
             Instance = null;
+    }
+
+    private void OnStageChanged(GameStage old, GameStage next)
+    {
+     // TODO integrate the hud into this   
     }
 
     public void OnHostPressed()
@@ -66,6 +78,7 @@ public class MenuManager : MonoBehaviour
 
         CloseMainMenu();
         ShowHud();
+        GameManager.Instance.EnterLobby();
     }
 
     public void OnFindGamesPressed()
@@ -111,6 +124,13 @@ public class MenuManager : MonoBehaviour
 
         CloseMainMenu();
         ShowHud();
+        
+        GameManager.Instance.EnterLobby(); // do we care if join fails? 
+    }
+    
+    public void OnStartRoundPressed()  // TODO needs button or key
+    {
+        GameManager.Instance.StartSession();
     }
 
     public void OnLeavePressed()
@@ -123,7 +143,6 @@ public class MenuManager : MonoBehaviour
     public void OnResumeGamePressed()
     {
         GameManager.Instance.ResumeGame();
-        ShowHud();
     }
 
     public void ShowHud()
@@ -164,6 +183,8 @@ public class MenuManager : MonoBehaviour
         Debug.Log("Close Pause Menu");
         DisableMenu();
         pauseMenu.SetActive(false);
+        
+        ShowHud();
     }
 
     public void DisableMenu()
