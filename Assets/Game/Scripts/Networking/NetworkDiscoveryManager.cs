@@ -6,6 +6,8 @@ using System.Text;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using UnityEngine;
+using System.Collections.Generic;
+using System.Net.NetworkInformation;
 
 public class ServerDiscoveryManager : MonoBehaviour
 {
@@ -129,11 +131,8 @@ public class ServerDiscoveryManager : MonoBehaviour
             {
                 byte[] request = Encoding.UTF8.GetBytes(DiscoveryRequest);
 
-                discoverySocket.Send(
-                    request,
-                    request.Length,
-                    new IPEndPoint(IPAddress.Broadcast, discoveryPort)
-                );
+                foreach (var addr in GetBroadcastAddresses())
+                    discoverySocket.Send(request, request.Length, new IPEndPoint(addr, discoveryPort));
 
                 nextSearchTime = Time.unscaledTime + 1f;
             }
@@ -187,6 +186,32 @@ public class ServerDiscoveryManager : MonoBehaviour
         catch (ObjectDisposedException)
         {
             // Socket was closed while processing discovery.
+        }
+    }
+
+
+    private static IEnumerable<IPAddress> GetBroadcastAddresses()
+    {
+        foreach (var ni in NetworkInterface.GetAllNetworkInterfaces())
+        {
+            if (ni.OperationalStatus != OperationalStatus.Up ||
+                ni.NetworkInterfaceType == NetworkInterfaceType.Loopback)
+                continue;
+
+            foreach (var ua in ni.GetIPProperties().UnicastAddresses)
+            {
+                if (ua.Address.AddressFamily != AddressFamily.InterNetwork ||
+                    ua.IPv4Mask == null)
+                    continue;
+
+                byte[] ip = ua.Address.GetAddressBytes();
+                byte[] mask = ua.IPv4Mask.GetAddressBytes();
+                byte[] bc = new byte[4];
+                for (int i = 0; i < 4; i++)
+                    bc[i] = (byte)(ip[i] | ~mask[i]);
+
+                yield return new IPAddress(bc);
+            }
         }
     }
 
