@@ -30,6 +30,9 @@ public class ItemHitDamage : NetworkBehaviour
         dir = dir.sqrMagnitude > 0.001f ? dir.normalized : transform.forward;
 
         Vector3 impulse = dir * knockbackForce + Vector3.up * (knockbackForce * upwardBoost);
+        player.itemCount.Value += 1;
         player.TakeDamage(damage, impulse);
+
+        NetworkObject.Despawn(true);
     }
 }

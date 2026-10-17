@@ -327,7 +327,8 @@ MonoBehaviour:
   goldItemPrefab: {fileID: 5400267961435067128, guid: 635f6f53a75e2a545a56cb6e05ef25c8, type: 3}
   dropFraction: 1
   maxDroppedItems: 100
-  scatterForce: 0.5
+  scatterForce: 0
+  dropRadius: 0.7
 --- !u!114 &6121316786019787671
 MonoBehaviour:
   m_ObjectHideFlags: 0

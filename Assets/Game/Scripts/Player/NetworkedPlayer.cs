@@ -48,6 +48,7 @@ public class NetworkedPlayer : NetworkBehaviour
     [Range(0f, 1f)] public float dropFraction = 1f; // 1 = alles, 0.5 = die Hälfte
     public int maxDroppedItems = 100;                // Obergrenze physischer Items
     public float scatterForce = 2f;
+    public float dropRadius = 0.9f;
 
     public override void OnNetworkSpawn()
     {
@@ -197,18 +198,23 @@ public class NetworkedPlayer : NetworkBehaviour
         if (goldItemPrefab == null) return;
 
         int amount = Mathf.Min(Mathf.CeilToInt(itemCount.Value * dropFraction), maxDroppedItems);
+        if (amount <= 0) return;
 
         for (int i = 0; i < amount; i++)
         {
-            Vector2 circle = Random.insideUnitCircle;
-            Vector3 pos = transform.position + Vector3.up * 1f + new Vector3(circle.x, 0f, circle.y) * 0.5f;
+            // gleichmäßig auf einem Ring verteilt, leicht zufällig versetzt
+            float angle = (i / (float)amount) * Mathf.PI * 2f + Random.Range(-0.2f, 0.2f);
+            Vector3 dir = new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle));
 
-            NetworkObject item = Instantiate(goldItemPrefab, pos, Random.rotation);
+            // Höhe abwechselnd versetzt, damit Nachbarn sich nicht im selben Level überlappen
+            Vector3 pos = transform.position + dir * dropRadius + Vector3.up * (0.6f + (i % 2) * 0.3f);
+
+            NetworkObject item = Instantiate(goldItemPrefab, pos, Quaternion.identity);
 
             if (item.TryGetComponent(out Rigidbody rb))
             {
-                Vector3 dir = new Vector3(circle.x, 0.6f, circle.y).normalized;
-                rb.AddForce(dir * scatterForce, ForceMode.Impulse);
+                rb.maxDepenetrationVelocity = 1f;   // begrenzt das Herausdrücken aus Überlappungen
+                rb.AddForce(dir * scatterForce, ForceMode.VelocityChange);   // masseunabhängig, in m/s
             }
 
             item.Spawn();
