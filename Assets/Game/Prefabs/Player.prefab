@@ -19,6 +19,7 @@ GameObject:
   - component: {fileID: 9185180333716623163}
   - component: {fileID: 438196879867463906}
   - component: {fileID: 4760379984758195476}
+  - component: {fileID: 6744151902576570539}
   m_Layer: 7
   m_Name: Player
   m_TagString: Untagged
@@ -42,6 +43,7 @@ Transform:
   - {fileID: 1326003743626191969}
   - {fileID: 3380687213570576884}
   - {fileID: 949799104741543003}
+  - {fileID: 815508207310199576}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &5188604172640537723
@@ -138,7 +140,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 3059258757
+  GlobalObjectIdHash: 2856043236
   InScenePlacedSourceGlobalObjectIdHash: 0
   m_InScenePlacedDisabledByDefault: 0
   DeferredDespawnTick: 0
@@ -363,6 +365,56 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 119
   iterations: 3
+--- !u!114 &6744151902576570539
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2571872415284446001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 75a5f65ee4c9bc34ba1219b5b4c92bcf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NetworkedGoldBarStack
+  ShowTopMostFoldoutHeaderGroup: 1
+  targetPlayer: {fileID: 6540924311002986634}
+  goldBarPrefab: {fileID: 5907902913097566749, guid: 546474e6189e74344ac41ab426da55cc, type: 3}
+  stackOrigin: {fileID: 815508207310199576}
+  columns: 2
+  rows: 2
+  barSpacing: {x: 0.26, y: 0.2, z: 0.4}
+--- !u!1 &3557858841055659239
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 815508207310199576}
+  m_Layer: 7
+  m_Name: STackable
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &815508207310199576
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3557858841055659239}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.149, y: -0.56, z: 0.816}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2165066496292194191}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4927563810153721009
 GameObject:
   m_ObjectHideFlags: 0
