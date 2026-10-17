@@ -106,12 +106,12 @@ public class PlayerMovement : MonoBehaviour
         return inputActions.FPSController.Look.ReadValue<Vector2>();
     }
 
-    public void EnableMovement(bool enabled)
+    public void SetEnableMovement(bool enabled)
     {
         movementEnabled = enabled;
     }
 
-    public void EnablePlayer(bool enabled)
+    public void SetEnablePlayer(bool enabled)
     {
         playerEnabled = enabled;
 

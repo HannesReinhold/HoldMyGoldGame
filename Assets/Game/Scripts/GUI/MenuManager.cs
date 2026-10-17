@@ -1,3 +1,4 @@
+using Unity.Netcode;
 using UnityEngine;
 
 public class MenuManager : MonoBehaviour
@@ -99,6 +100,9 @@ public class MenuManager : MonoBehaviour
         menuCam.SetActive(false);
         canvas.SetActive(false);
 
+        if(GameManager.Instance.localPlayer != null)
+            GameManager.Instance.localPlayer.SetEnablePlayerCamera(true);
+
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
     }
@@ -107,6 +111,9 @@ public class MenuManager : MonoBehaviour
     {
         menuCam.SetActive(true);
         canvas.SetActive(true);
+
+        if (GameManager.Instance.localPlayer != null)
+            GameManager.Instance.localPlayer.SetEnablePlayerCamera(false);
 
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
@@ -120,4 +127,6 @@ public class MenuManager : MonoBehaviour
         lobbyMenu.SetActive(true);
         pauseMenu.SetActive(false);
     }
+
+
 }

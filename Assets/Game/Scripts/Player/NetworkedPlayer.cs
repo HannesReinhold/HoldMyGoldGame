@@ -13,10 +13,9 @@ public class NetworkedPlayer : NetworkBehaviour
     {
         base.OnNetworkSpawn();
 
-        playerCamera.enabled = IsOwner;
-        playerAudioListener.enabled = IsOwner;
-        playerMovement.EnableMovement(IsOwner);
-        playerMovement.EnablePlayer(IsOwner);
+        SetEnablePlayerCamera(true);
+        playerMovement.SetEnableMovement(IsOwner);
+        playerMovement.SetEnablePlayer(IsOwner);
 
 
         // Disable other stuff from the other player on this client
@@ -28,6 +27,9 @@ public class NetworkedPlayer : NetworkBehaviour
                     behaviour.enabled = IsOwner;
             }
         }
+
+        if (IsOwner)
+            GameManager.Instance.localPlayer = this;
     }
 
     public override void OnNetworkDespawn()
@@ -39,5 +41,11 @@ public class NetworkedPlayer : NetworkBehaviour
         }
 
         base.OnNetworkDespawn();
+    }
+
+    public void SetEnablePlayerCamera(bool enabled)
+    {
+        playerCamera.enabled=enabled;
+        playerAudioListener.enabled=enabled;
     }
 }

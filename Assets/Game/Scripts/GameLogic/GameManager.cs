@@ -7,8 +7,9 @@ public class GameManager : MonoBehaviour
 {
     public MenuManager menuManager;
 
-
     private InputSystem inputActions;
+
+    public NetworkedPlayer localPlayer;
 
     public static GameManager Instance { get; private set; }
 
@@ -63,5 +64,4 @@ public class GameManager : MonoBehaviour
     {
         MenuManager.Instance.OpenMainMenu();
     }
-
 }

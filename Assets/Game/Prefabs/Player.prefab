@@ -390,7 +390,7 @@ MonoBehaviour:
     m_Bits: 64
   dropForwardOffset: 1.5
   dropUpOffset: 0.3
-  throwForce: 10
+  throwForce: 25
   enableInteractions: 1
 --- !u!1 &5731507008725031861
 GameObject:
