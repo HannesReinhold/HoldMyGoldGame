@@ -22,6 +22,7 @@ public class PlayerMovement : MonoBehaviour
     public float knockbackDecelAir = 4f;     // in der Luft weniger Reibung
 
     [SerializeField] private float jumpHeight = 1.5f;
+    [SerializeField] private BodyWallBlocker wallBlocker;
 
     private float xRotation = 0f;
 
@@ -107,6 +108,7 @@ public class PlayerMovement : MonoBehaviour
         // Ein einziger Move: Laufen + Knockback + Vertikal
         Vector3 total = move + knockback + Vector3.up * velocity.y;
         controller.Move(total * Time.deltaTime);
+        wallBlocker.Resolve();
 
         float decel = grounded ? knockbackDecelGround : knockbackDecelAir;
         knockback = Vector3.MoveTowards(knockback, Vector3.zero, decel * Time.deltaTime);
