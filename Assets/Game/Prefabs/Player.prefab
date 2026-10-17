@@ -273,7 +273,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 2856043236
+  GlobalObjectIdHash: 3059258757
   InScenePlacedSourceGlobalObjectIdHash: 0
   m_InScenePlacedDisabledByDefault: 0
   DeferredDespawnTick: 0
@@ -305,6 +305,11 @@ MonoBehaviour:
   playerAudioListener: {fileID: 2307845496225397581}
   playerMovement: {fileID: 6121316786019787671}
   localOnlyBehaviours: []
+  playerSlot:
+    UpdateTraits:
+      MinSecondsBetweenUpdates: 0
+      MaxSecondsBetweenUpdates: 0
+    m_InternalValue: -1
 --- !u!114 &6121316786019787671
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -385,6 +390,7 @@ MonoBehaviour:
   playerCamera: {fileID: 5340447060612071793}
   dropPosition: {fileID: 3380687213570576884}
   itemPrefab: {fileID: 5400267961435067128, guid: 635f6f53a75e2a545a56cb6e05ef25c8, type: 3}
+  networkedPlayer: {fileID: 6540924311002986634}
   pickupRange: 3
   pickupLayers:
     serializedVersion: 2

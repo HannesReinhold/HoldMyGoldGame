@@ -14,6 +14,10 @@ public class DropZone : NetworkBehaviour
         NetworkVariableWritePermission.Server
     );
 
+    [Header("Besitzer")]
+    public int ownerSlot;              // 0 oder 1, pro Zone im Inspector setzen
+    public bool allowStealing = true;  // false = auch Entnehmen nur für den Besitzer
+
     public int StoredItems => storedItems.Value;
 
     public override void OnNetworkSpawn()

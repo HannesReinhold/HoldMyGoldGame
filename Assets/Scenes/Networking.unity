@@ -948,6 +948,10 @@ PrefabInstance:
       propertyPath: InScenePlacedSourceGlobalObjectIdHash
       value: 1783292632
       objectReference: {fileID: 0}
+    - target: {fileID: 5198739594422745317, guid: 17ad1985c41a1804d964a34f3ce311a5, type: 3}
+      propertyPath: slot
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 5728336215834084828, guid: 17ad1985c41a1804d964a34f3ce311a5, type: 3}
       propertyPath: m_Name
       value: DropZone (1)

@@ -10,6 +10,7 @@ public class NetworkedPlayerInteraction : NetworkBehaviour
     public Camera playerCamera;
     public Transform dropPosition;
     public NetworkObject itemPrefab;
+    public NetworkedPlayer networkedPlayer;
 
     [Header("Interaction")]
     public float pickupRange = 3f;
@@ -284,6 +285,9 @@ public class NetworkedPlayerInteraction : NetworkBehaviour
         var zone = zoneObj.GetComponent<DropZone>();
         if (zone == null) return;
 
+        if (zone.ownerSlot != networkedPlayer.playerSlot.Value)
+            return;   // beim Gegner nicht einzahlen
+
         Collider col = zoneObj.GetComponent<Collider>();
         Vector3 closest = col.ClosestPoint(transform.position);
 
@@ -305,6 +309,9 @@ public class NetworkedPlayerInteraction : NetworkBehaviour
 
         var zone = zoneObj.GetComponent<DropZone>();
         if (zone == null) return;
+
+        if (!zone.allowStealing && zone.ownerSlot != networkedPlayer.playerSlot.Value)
+            return;
 
         Collider col = zoneObj.GetComponent<Collider>();
         Vector3 closest = col.ClosestPoint(transform.position);
