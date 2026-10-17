@@ -18,6 +18,8 @@ public class HudManager : MonoBehaviour
     {
         GameManager.Instance.StageChanged += OnStageChanged;
         playerData = GameManager.Instance.localPlayer;
+        CountDown.enabled = false;
+        Timer.enabled = false;
     }
 
     void Update()
@@ -54,9 +56,8 @@ public class HudManager : MonoBehaviour
     
     private void OnStageChanged(GameStage old, GameStage next)
     {
-        if (Stage != null)
-        {
-            Stage.text = next.ToString();
-        }
+        Stage.text = next.ToString();
+        CountDown.enabled = next == GameStage.COUNTDOWN;
+        Timer.enabled = next == GameStage.PLAY;
     }
 }
