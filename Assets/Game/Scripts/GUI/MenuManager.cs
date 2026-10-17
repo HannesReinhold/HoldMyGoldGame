@@ -1,4 +1,6 @@
+
 using Game.Scripts.GameLogic;
+using Unity.Netcode;
 using UnityEngine;
 using TMPro;
 
@@ -11,13 +13,18 @@ public class MenuManager : MonoBehaviour
     public GameObject pauseMenu;
     public GameObject hud;
 
-    [Header("Server Discovery UI")]
+    [Header("Relay UI")]
+    [SerializeField] private RelayHostJoinManager relayManager;
     [SerializeField] private TMP_Text discoveryStatusText;
+    [SerializeField] private TMP_Text joinCodeDisplayText;
+    [SerializeField] private TMP_InputField joinCodeInput;
     [SerializeField] private GameObject joinFoundGameButton;
 
     public static MenuManager Instance { get; private set; }
 
-    private ServerDiscoveryManager discoveryManager;
+    private NetworkManager networkManager;
+    private bool connectionAttempted;
+    private bool enteredLobby;
 
     private void Awake()
     {
@@ -34,133 +41,226 @@ public class MenuManager : MonoBehaviour
     private void Start()
     {
         if (GameManager.Instance != null)
-        {
             GameManager.Instance.StageChanged += OnStageChanged;
-        }
-        
-        discoveryManager = ServerDiscoveryManager.Instance;
 
-        if (discoveryManager == null)
+        if (relayManager == null)
+            relayManager = FindFirstObjectByType<RelayHostJoinManager>();
+
+        networkManager = NetworkManager.Singleton;
+
+        if (networkManager != null)
         {
-            Debug.LogError("ServerDiscoveryManager not found!");
-            return;
+            networkManager.OnClientConnectedCallback += OnClientConnected;
+            networkManager.OnClientDisconnectCallback += OnClientDisconnected;
+        }
+        else
+        {
+            Debug.LogError("NetworkManager.Singleton not found!");
         }
 
-        discoveryManager.OnHostDiscovered += OnHostDiscovered;
+        if (relayManager == null)
+            Debug.LogError("RelayHostJoinManager not found!");
 
         if (joinFoundGameButton != null)
-            joinFoundGameButton.SetActive(false);
+            joinFoundGameButton.SetActive(true);
+
+        if (joinCodeDisplayText != null)
+            joinCodeDisplayText.text = "";
+
+        if (discoveryStatusText != null)
+            discoveryStatusText.text = "Host a game or enter a join code.";
+
+        relayManager.JoinCodeReady += OnRelayJoinCodeReady;
     }
 
     private void OnDestroy()
     {
-        if (discoveryManager != null)
-            discoveryManager.OnHostDiscovered -= OnHostDiscovered;
+        if (networkManager != null)
+        {
+            networkManager.OnClientConnectedCallback -= OnClientConnected;
+            networkManager.OnClientDisconnectCallback -= OnClientDisconnected;
+        }
 
         if (GameManager.Instance != null)
             GameManager.Instance.StageChanged -= OnStageChanged;
 
         if (Instance == this)
             Instance = null;
+
+        if (relayManager != null)
+            relayManager.JoinCodeReady -= OnRelayJoinCodeReady;
     }
 
-    private void OnStageChanged(GameStage old, GameStage next)
+    private void OnStageChanged(GameStage oldStage, GameStage newStage)
     {
-     // TODO integrate the hud into this   
+        // Integrate HUD changes for each game stage here.
     }
 
     public void OnHostPressed()
     {
-        if (discoveryManager == null)
-            return;
-
-        discoveryManager.Host();
-
-        CloseMainMenu();
-        ShowHud();
-        GameManager.Instance.EnterLobby();
-    }
-
-    public void OnFindGamesPressed()
-    {
-        if (discoveryManager == null)
-            return;
-
-        if (discoveryStatusText != null)
-            discoveryStatusText.text = "Searching for games...";
-
-        if (joinFoundGameButton != null)
-            joinFoundGameButton.SetActive(false);
-
-        discoveryManager.StartSearching();
-    }
-
-    private void OnHostDiscovered(string address)
-    {
-        Debug.Log($"Found host at {address}");
-
-        if (discoveryStatusText != null)
-            discoveryStatusText.text = $"Game found: {address}";
-
-        if (joinFoundGameButton != null)
-            joinFoundGameButton.SetActive(true);
-    }
-
-    public void OnJoinFoundGamePressed()
-    {
-        if (discoveryManager == null ||
-            string.IsNullOrEmpty(discoveryManager.DiscoveredHostAddress))
+        if (relayManager == null)
         {
-            if (discoveryStatusText != null)
-                discoveryStatusText.text = "No game found. Search again.";
-
+            SetStatus("Relay manager not found.");
             return;
         }
 
-        discoveryManager.JoinDiscoveredHost();
+        connectionAttempted = true;
+        enteredLobby = false;
 
-        if (discoveryStatusText != null)
-            discoveryStatusText.text = "Connecting to game...";
+        SetStatus("Creating Relay session...");
+
+        if (joinCodeDisplayText != null)
+            joinCodeDisplayText.text = "Creating join code...";
+
+        relayManager.Host();
+    }
+
+    // Optional: wire this to the button that previously searched for games.
+    public void OnFindGamesPressed()
+    {
+        SetStatus("Enter the host's Relay join code.");
+    }
+
+    // Retained name so an existing button can keep its OnClick binding.
+    public void OnJoinFoundGamePressed()
+    {
+        if (relayManager == null)
+        {
+            SetStatus("Relay manager not found.");
+            return;
+        }
+
+        if (joinCodeInput == null)
+        {
+            SetStatus("Join code input field is not assigned.");
+            return;
+        }
+
+        string joinCode = joinCodeInput.text.Trim();
+
+        if (string.IsNullOrWhiteSpace(joinCode))
+        {
+            SetStatus("Please enter a join code.");
+            return;
+        }
+
+        connectionAttempted = true;
+        enteredLobby = false;
+
+        SetStatus("Joining Relay session...");
+
+        relayManager.Join(joinCode);
+    }
+
+    // Called by RelayHostJoinManager when the host's join code is ready.
+    public void OnRelayJoinCodeReady(string joinCode)
+    {
+        if (joinCodeDisplayText != null)
+            joinCodeDisplayText.text = "Join code: " + joinCode;
+
+        SetStatus("Relay created. Share the join code with the other player.");
+    }
+
+    private void OnClientConnected(ulong clientId)
+    {
+        if (networkManager == null ||
+            clientId != networkManager.LocalClientId)
+        {
+            return;
+        }
+
+        if (!connectionAttempted || enteredLobby)
+            return;
+
+        enteredLobby = true;
+
+        SetStatus("Connected!");
 
         CloseMainMenu();
         ShowHud();
-        
-        GameManager.Instance.EnterLobby(); // do we care if join fails? 
+
+        if (GameManager.Instance != null)
+            GameManager.Instance.EnterLobby();
     }
-    
-    public void OnStartRoundPressed()  // TODO needs button or key
+
+    private void OnClientDisconnected(ulong clientId)
     {
-        GameManager.Instance.StartSession();
+        if (networkManager == null ||
+            clientId != networkManager.LocalClientId)
+        {
+            return;
+        }
+
+        if (connectionAttempted && !enteredLobby)
+        {
+            SetStatus("Connection failed or disconnected. Check the join code and try again.");
+        }
+        else if (enteredLobby)
+        {
+            SetStatus("Disconnected from the session.");
+        }
+
+        connectionAttempted = false;
+        enteredLobby = false;
+    }
+
+    private void SetStatus(string message)
+    {
+        Debug.Log("[MenuManager] " + message);
+
+        if (discoveryStatusText != null)
+            discoveryStatusText.text = message;
+    }
+
+    public void OnStartRoundPressed()
+    {
+        if (GameManager.Instance != null)
+            GameManager.Instance.StartSession();
     }
 
     public void OnLeavePressed()
     {
+        connectionAttempted = false;
+        enteredLobby = false;
+
+        if (GameManager.Instance != null)
+            GameManager.Instance.LeaveGame();
+        else if (networkManager != null && networkManager.IsListening)
+            networkManager.Shutdown();
+
         CloseMainMenu();
         HideHud();
-        GameManager.Instance.LeaveGame();
     }
 
     public void OnResumeGamePressed()
     {
-        GameManager.Instance.ResumeGame();
+        if (GameManager.Instance != null)
+            GameManager.Instance.ResumeGame();
+
+        ClosePauseMenu();
     }
 
     public void ShowHud()
     {
-        hud.SetActive(true);
+        if (hud != null)
+            hud.SetActive(true);
     }
 
     public void HideHud()
     {
-        hud.SetActive(false);
+        if (hud != null)
+            hud.SetActive(false);
     }
 
     public void OpenMainMenu()
     {
         Debug.Log("Open Main Menu");
+
         OpenLobbyMenu();
         EnableMenu();
         HideHud();
+
+        SetStatus("Host a game or enter a join code.");
     }
 
     public void CloseMainMenu()
@@ -171,29 +271,40 @@ public class MenuManager : MonoBehaviour
 
     public void OpenPauseMenu()
     {
-        Debug.Log("Open Pause Menu");
         EnableMenu();
-        pauseMenu.SetActive(true);
-        lobbyMenu.SetActive(false);
+
+        if (pauseMenu != null)
+            pauseMenu.SetActive(true);
+
+        if (lobbyMenu != null)
+            lobbyMenu.SetActive(false);
+
         HideHud();
     }
 
     public void ClosePauseMenu()
     {
-        Debug.Log("Close Pause Menu");
         DisableMenu();
-        pauseMenu.SetActive(false);
-        
+
+        if (pauseMenu != null)
+            pauseMenu.SetActive(false);
+
         ShowHud();
     }
 
     public void DisableMenu()
     {
-        menuCam.SetActive(false);
-        canvas.SetActive(false);
+        if (menuCam != null)
+            menuCam.SetActive(false);
 
-        if (GameManager.Instance.localPlayer != null)
+        if (canvas != null)
+            canvas.SetActive(false);
+
+        if (GameManager.Instance != null &&
+            GameManager.Instance.localPlayer != null)
+        {
             GameManager.Instance.localPlayer.SetEnablePlayerCamera(true);
+        }
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
@@ -201,11 +312,17 @@ public class MenuManager : MonoBehaviour
 
     public void EnableMenu()
     {
-        menuCam.SetActive(true);
-        canvas.SetActive(true);
+        if (menuCam != null)
+            menuCam.SetActive(true);
 
-        if (GameManager.Instance.localPlayer != null)
+        if (canvas != null)
+            canvas.SetActive(true);
+
+        if (GameManager.Instance != null &&
+            GameManager.Instance.localPlayer != null)
+        {
             GameManager.Instance.localPlayer.SetEnablePlayerCamera(false);
+        }
 
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
@@ -213,7 +330,10 @@ public class MenuManager : MonoBehaviour
 
     public void OpenLobbyMenu()
     {
-        lobbyMenu.SetActive(true);
-        pauseMenu.SetActive(false);
+        if (lobbyMenu != null)
+            lobbyMenu.SetActive(true);
+
+        if (pauseMenu != null)
+            pauseMenu.SetActive(false);
     }
 }

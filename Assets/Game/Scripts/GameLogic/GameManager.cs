@@ -115,7 +115,7 @@ public class GameManager : MonoBehaviour
         ServerDiscoveryManager.Instance.Disconnect();
 
         SetStage(GameStage.NONE);
-        SceneManager.LoadScene("Networking");
+        SceneManager.LoadScene("NewNetworkingTEst");
 
         MenuManager.Instance.OpenMainMenu();
     }
