@@ -26,7 +26,7 @@ Transform:
   m_GameObject: {fileID: 1957819520063950406}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0.7071073, z: -0, w: 0.70710635}
-  m_LocalPosition: {x: 0, y: 0.24000001, z: 0}
+  m_LocalPosition: {x: 0, y: 1.3, z: 0}
   m_LocalScale: {x: 1.6762491, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -196,7 +196,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 1523800334
+  GlobalObjectIdHash: 1783292632
   InScenePlacedSourceGlobalObjectIdHash: 0
   m_InScenePlacedDisabledByDefault: 0
   DeferredDespawnTick: 0
@@ -229,6 +229,12 @@ MonoBehaviour:
   takeAmount: 1
   ownerSlot: 0
   allowStealing: 1
+  goldBarPrefab: {fileID: 0}
+  stackOrigin: {fileID: 0}
+  columns: 4
+  rows: 4
+  randomRotation: 1
+  barSpacing: {x: 0.12, y: 0.05, z: 0.08}
 --- !u!1 &7180263478260023474
 GameObject:
   m_ObjectHideFlags: 0

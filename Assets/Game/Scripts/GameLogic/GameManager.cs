@@ -139,6 +139,7 @@ public class GameManager : NetworkBehaviour
     {
         if (localPlayer != null)
             localPlayer.SetControlsBlocked(!ControlsAllowedByStage);
+        localPlayer.playerMovement.SetEnableMovement(ControlsAllowedByStage);
     }
 
     // ---------- Server-Logik ----------
