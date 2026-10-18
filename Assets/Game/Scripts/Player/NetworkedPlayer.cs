@@ -108,6 +108,25 @@ public class NetworkedPlayer : NetworkBehaviour
     [Header("FMOD Death Sound")]
     [SerializeField] private EventReference deathSoundEvent;
 
+
+
+    [Header("Cart Width Upgrade")]
+    public Transform cartTransform;
+
+    [SerializeField, Min(0f)]
+    private float cartWidthIncreasePerLevel = 0.15f;
+
+    private Vector3 baseCartScale;
+
+    private readonly NetworkVariable<int> cartWidthLevel =
+        new NetworkVariable<int>(
+            0,
+            NetworkVariableReadPermission.Everyone,
+            NetworkVariableWritePermission.Server);
+
+
+    public int CartWidthLevel => cartWidthLevel.Value;
+
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
@@ -163,6 +182,9 @@ public class NetworkedPlayer : NetworkBehaviour
 
         footstepTimer = 0f;
         ApplyWalkingSound(isWalkingNetworked.Value);
+
+        cartWidthLevel.OnValueChanged += OnCartWidthLevelChanged;
+        ApplyCartWidth();
     }
     
     private void onOwnHealthChanged(int previousValue, int newValue)
@@ -234,7 +256,14 @@ public class NetworkedPlayer : NetworkBehaviour
         //unsubscribe walking
         isWalkingNetworked.OnValueChanged -= OnWalkingStateChanged;
         ApplyWalkingSound(false);
+
+
+        cartWidthLevel.OnValueChanged -= OnCartWidthLevelChanged;
+
+        ApplyCartWidth();
     }
+
+
     
     private void OnOwnItemCountChanged(int previous, int current)
     {
@@ -251,6 +280,46 @@ public class NetworkedPlayer : NetworkBehaviour
     {
         playerCamera.enabled=enabled;
         playerAudioListener.enabled=enabled;
+    }
+
+    private void Awake()
+    {
+        if (cartTransform != null)
+            baseCartScale = cartTransform.localScale;
+    }
+
+    private void OnCartWidthLevelChanged(int previous, int current)
+    {
+        ApplyCartWidth();
+    }
+
+    private void ApplyCartWidth()
+    {
+        if (cartTransform == null)
+            return;
+
+        Vector3 scale = baseCartScale;
+
+        // Increase only the cart's width (local X axis).
+        scale.z *= 1f + cartWidthLevel.Value * cartWidthIncreasePerLevel;
+
+        cartTransform.localScale = scale;
+    }
+
+    public void GrantCartWidthUpgrade()
+    {
+        if (!IsServer || !IsSpawned)
+            return;
+
+        cartWidthLevel.Value++;
+    }
+
+    public void ResetCartWidthUpgrade()
+    {
+        if (!IsServer || !IsSpawned)
+            return;
+
+        cartWidthLevel.Value = 0;
     }
 
     private int FindFreeSlot()

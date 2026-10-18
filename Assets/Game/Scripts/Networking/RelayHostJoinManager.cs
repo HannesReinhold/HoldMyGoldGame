@@ -125,10 +125,11 @@ public class RelayHostJoinManager : MonoBehaviour
         }
     }
 
-    public async void Join(string joinCode)
+    // Returns false when joining failed; MenuManager awaits this to show feedback.
+    public async Task<bool> Join(string joinCode)
     {
         if (busy)
-            return;
+            return false;
 
         try
         {
@@ -137,19 +138,19 @@ public class RelayHostJoinManager : MonoBehaviour
             if (!ResolveNetwork())
             {
                 Fail("NetworkManager or UnityTransport missing.");
-                return;
+                return false;
             }
 
             if (networkManager.IsListening)
             {
                 Debug.LogWarning("NetworkManager is already running.");
-                return;
+                return false;
             }
 
             if (string.IsNullOrWhiteSpace(joinCode))
             {
                 Fail("Enter a Relay join code.");
-                return;
+                return false;
             }
 
             await InitializeServices();
@@ -159,22 +160,31 @@ public class RelayHostJoinManager : MonoBehaviour
                     joinCode.Trim());
 
             if (this == null || !ResolveNetwork())
-                return;
+                return false;
 
             transport.UseWebSockets = true;
 
             transport.SetRelayServerData(
-                AllocationUtils.ToRelayServerData(
-                    allocation, "wss"));
+                AllocationUtils.ToRelayServerData(allocation, "wss"));
 
             if (!networkManager.StartClient())
             {
                 Fail("Failed to start the client.");
+                return false;
             }
+
+            return true;
+        }
+        catch (RelayServiceException e)
+        {
+            Debug.LogWarning($"Relay join failed: {e.Message}");
+            OperationFailed?.Invoke("Invalid Join-Code or Connection failed.");
+            return false;
         }
         catch (Exception e)
         {
-            Fail("Could not join the Relay session. Check the join code: " + e.Message, e);
+            Fail("Could not join the Relay session: " + e.Message, e);
+            return false;
         }
         finally
         {

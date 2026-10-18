@@ -128,7 +128,7 @@ public class UpgradeBowl : NetworkBehaviour
                     upgradeText.text = "Pickup Speed";
                     break;
                 case UpgradeType.ThrowSpeed:
-                    upgradeText.text = "Throw Speed";
+                    upgradeText.text = "Throw Force";
                     break;
                 case UpgradeType.Width:
                     upgradeText.text = "Cart Width";
@@ -214,6 +214,15 @@ public class UpgradeBowl : NetworkBehaviour
         {
             Debug.Log($"{name}: Upgrade unavailable or already maxed.");
             return;
+        }
+
+        if (upgradeType == UpgradeType.Width)
+        {
+            NetworkedPlayer player =
+                client.PlayerObject.GetComponent<NetworkedPlayer>();
+
+            if (player != null)
+                player.GrantCartWidthUpgrade();
         }
 
         // Successful upgrade: reset the offered bars.

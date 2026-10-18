@@ -1,8 +1,6 @@
-
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 [RequireComponent(typeof(NetworkObject))]
 public class NetworkedGoldBarStack : NetworkBehaviour
@@ -14,13 +12,41 @@ public class NetworkedGoldBarStack : NetworkBehaviour
     [SerializeField] private GameObject goldBarPrefab;
     [SerializeField] private Transform stackOrigin;
 
-    [Header("Grid Layout")]
-    public float randomRotation = 1;
-    [Min(1)][SerializeField] private int columns = 4;
-    [Min(1)][SerializeField] private int rows = 4;
+    [Header("Cart Layout")]
+    [Tooltip("Transform whose scale changes when the cart width is upgraded.")]
+    [SerializeField] private Transform cartTransform;
+
+    [Tooltip("Local-space width available for gold bars at the base cart size.")]
+    [Min(0.01f)]
+    [SerializeField] private float baseAvailableWidth = 0.48f;
+
+    [Tooltip("Local-space depth available for gold bars.")]
+    [Min(0.01f)]
+    [SerializeField] private float availableDepth = 0.48f;
+
+    [Tooltip("Small margin kept between the bars and the cart edges.")]
+    [Min(0f)]
+    [SerializeField] private float edgeMargin = 0.02f;
+
+    [Header("Gold Bar Spacing")]
+    public float randomRotation = 1f;
+
+    [Min(0.01f)]
+    [SerializeField] private float barWidth = 0.12f;
+
+    [Min(0.01f)]
+    [SerializeField] private float barDepth = 0.12f;
+
+    [Min(0.01f)]
+    [SerializeField] private float barHeight = 0.05f;
+
     [SerializeField]
     private Vector3 barSpacing =
         new Vector3(0.12f, 0.05f, 0.12f);
+
+    [Header("Layout Update")]
+    [Tooltip("Recalculate the layout if the cart's scale changes.")]
+    [SerializeField] private bool monitorCartScale = true;
 
     private readonly NetworkVariable<int> syncedGoldBarCount =
         new NetworkVariable<int>(
@@ -33,22 +59,34 @@ public class NetworkedGoldBarStack : NetworkBehaviour
 
     private NetworkedPlayer subscribedPlayer;
 
+    private Vector3 lastCartScale;
+    private int lastLayoutCount = -1;
+
     public int GoldBarCount => syncedGoldBarCount.Value;
+
+    [Header("Width Upgrade Layout")]
+    [SerializeField, Min(1)] private int baseColumns = 4;
+    [SerializeField, Min(0)] private int extraColumnsPerUpgrade = 1;
+    [SerializeField, Min(1)] private int rows = 4;
+
+    private int lastWidthLevel = -1;
 
     public override void OnNetworkSpawn()
     {
         syncedGoldBarCount.OnValueChanged += OnCountChanged;
 
+        if (cartTransform == null && targetPlayer != null)
+            cartTransform = targetPlayer.cartTransform;
+
+        if (cartTransform != null)
+            lastCartScale = cartTransform.localScale;
+
         if (IsServer)
         {
             if (targetPlayer != null)
-            {
                 SubscribeToPlayer(targetPlayer);
-            }
             else
-            {
                 TryFindPlayer();
-            }
         }
 
         RebuildStack(syncedGoldBarCount.Value);
@@ -63,13 +101,27 @@ public class NetworkedGoldBarStack : NetworkBehaviour
 
     private void Update()
     {
-        // Retry while the player reference is not yet available.
+        if (targetPlayer == null)
+        {
+            targetPlayer = GetComponentInParent<NetworkedPlayer>();
+        }
+
         if (IsServer && subscribedPlayer == null)
         {
             if (targetPlayer != null)
                 SubscribeToPlayer(targetPlayer);
             else
                 TryFindPlayer();
+        }
+
+        int widthLevel = targetPlayer != null
+            ? targetPlayer.CartWidthLevel
+            : 0;
+
+        if (widthLevel != lastWidthLevel)
+        {
+            lastWidthLevel = widthLevel;
+            RebuildStack(syncedGoldBarCount.Value);
         }
     }
 
@@ -78,8 +130,6 @@ public class NetworkedGoldBarStack : NetworkBehaviour
         if (NetworkManager.Singleton == null)
             return;
 
-        // For a wheelbarrow associated with the server's own player.
-        // For a specific remote player, assign Target Player instead.
         foreach (var client in NetworkManager.Singleton.ConnectedClientsList)
         {
             if (client.PlayerObject == null)
@@ -105,6 +155,12 @@ public class NetworkedGoldBarStack : NetworkBehaviour
 
         targetPlayer = player;
         subscribedPlayer = player;
+
+        if (cartTransform == null)
+            cartTransform = player.cartTransform;
+
+        if (cartTransform != null)
+            lastCartScale = cartTransform.localScale;
 
         subscribedPlayer.itemCount.OnValueChanged += OnPlayerCountChanged;
 
@@ -145,36 +201,65 @@ public class NetworkedGoldBarStack : NetworkBehaviour
         if (goldBarPrefab == null || stackOrigin == null)
             return;
 
-        int barsPerLayer = columns * rows;
+        int currentColumns = Mathf.Max(
+            1,
+            baseColumns + lastWidthLevel * extraColumnsPerUpgrade
+        );
+
+        int currentRows = Mathf.Max(1, rows);
+        int barsPerLayer = currentColumns * currentRows;
+
+        // Center the grid around the stack origin.
+        float gridWidth = (currentColumns - 1) * barSpacing.x;
+        float gridDepth = (currentRows - 1) * barSpacing.z;
+
+        float startX = -gridWidth * 0.5f;
+        float startZ = -gridDepth * 0.5f;
 
         for (int i = 0; i < count; i++)
         {
-            int column = i % columns;
-            int row = (i / columns) % rows;
+            int column = i % currentColumns;
+            int row = (i / currentColumns) % currentRows;
             int layer = i / barsPerLayer;
 
             Vector3 localPosition = new Vector3(
-                column * barSpacing.x,
+                startX + column * barSpacing.x,
                 layer * barSpacing.y,
-                row * barSpacing.z);
+                startZ + row * barSpacing.z
+            );
 
             GameObject bar = Instantiate(goldBarPrefab, stackOrigin);
+
+            // Deterministic rotation so all clients display the same layout.
+            Random.State previousRandomState = Random.state;
+            Random.InitState(i);
+
+            float rotationY = Random.Range(
+                -randomRotation,
+                randomRotation
+            );
+
+            Random.state = previousRandomState;
+
             bar.transform.localPosition = localPosition;
-            bar.transform.localRotation = Quaternion.Euler(0f, StableRandomYaw(column * rows + row + layer), 0f);
+            bar.transform.localRotation =
+                Quaternion.Euler(0f, rotationY, 0f);
 
             visualBars.Add(bar);
         }
     }
 
-    // Deterministic per-slot rotation without disturbing the global random state.
-    private float StableRandomYaw(int seed)
+    private float GetBaseCartScaleX()
     {
-        Random.State previous = Random.state;
-        Random.InitState(seed);
-        float yaw = Random.Range(-randomRotation, randomRotation);
-        Random.state = previous;
-        return yaw;
+        // Use the width before upgrades, not the current enlarged scale.
+        // Set this to your cart's original local X scale in the Inspector.
+        return Mathf.Max(0.0001f, baseCartScaleX);
     }
+
+    [Header("Base Cart Scale")]
+    [Tooltip("Original cartTransform.localScale.x before any width upgrades.")]
+    [Min(0.0001f)]
+    [SerializeField] private float baseCartScaleX = 1f;
 
     private void ClearStack()
     {
