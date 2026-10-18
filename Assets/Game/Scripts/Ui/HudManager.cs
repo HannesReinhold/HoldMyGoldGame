@@ -35,6 +35,7 @@ public class HudManager : MonoBehaviour
         if (!debug)
         {
             Stage.enabled = false;
+            Health.enabled = false;
         }
     }
 

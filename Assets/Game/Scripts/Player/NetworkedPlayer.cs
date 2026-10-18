@@ -175,7 +175,13 @@ public class NetworkedPlayer : NetworkBehaviour
             MenuManager.Instance.Hint.enabled = true;
             hintNumber = 1;
             MenuManager.Instance.Hint.text = "! Pickup gold using 'E' (take)";
-        } else if (newStage == GameStage.JOIN || newStage == GameStage.NONE)
+        }  else if (newStage == GameStage.JOIN)
+        {
+            MenuManager.Instance.Hint.enabled = true;
+            hintNumber = 3;
+            MenuManager.Instance.Hint.text = "! Start a singleplayer game using 'P'";
+        } 
+        else if (newStage == GameStage.COUNTDOWN || newStage == GameStage.NONE)
         {
             MenuManager.Instance.Hint.enabled = false;
             hintNumber = 0;
