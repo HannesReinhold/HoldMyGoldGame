@@ -1,11 +1,5 @@
 {
   "dependencies": {
-    "com.fmod.fmod-for-unity.v204": {
-      "version": "file:C:/Users/IXLAB/Downloads/fmodstudio20400.tgz",
-      "depth": 0,
-      "source": "local-tarball",
-      "dependencies": {}
-    },
     "com.unity.burst": {
       "version": "2.0.0",
       "depth": 1,
