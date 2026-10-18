@@ -8757,7 +8757,7 @@ MonoBehaviour:
   localPlayer: {fileID: 0}
   requiredPlayers: 2
   countdownSeconds: 3
-  playSeconds: 10
+  playSeconds: 1000
   allowSoloStart: 1
   gameplaySceneName: Networking
   stage:
@@ -18315,6 +18315,69 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 400000, guid: a2457da1b406fa040baf3ddf7c0cab86, type: 3}
   m_PrefabInstance: {fileID: 1235938578}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1235964355
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1235964357}
+  - component: {fileID: 1235964356}
+  m_Layer: 0
+  m_Name: Musik
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1235964356
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1235964355}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9a6610d2e704f1648819acc8d7460285, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: FMODUnity::FMODUnity.StudioEventEmitter
+  CollisionTag: 
+  EventReference:
+    Guid:
+      Data1: -1178395248
+      Data2: 1216663600
+      Data3: 1248962973
+      Data4: 318391315
+    Path: event:/OST/SOundtrack
+  Event: 
+  EventPlayTrigger: 1
+  EventStopTrigger: 2
+  AllowFadeout: 1
+  TriggerOnce: 0
+  Preload: 0
+  NonRigidbodyVelocity: 0
+  Params: []
+  OverrideAttenuation: 0
+  OverrideMinDistance: 1
+  OverrideMaxDistance: 20
+--- !u!4 &1235964357
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1235964355}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -11.8064, y: -23.82899, z: -58.77071}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1237854912
 GameObject:
   m_ObjectHideFlags: 0
@@ -29815,3 +29878,4 @@ SceneRoots:
   - {fileID: 326381050}
   - {fileID: 1406200980}
   - {fileID: 1189930837}
+  - {fileID: 1235964357}
