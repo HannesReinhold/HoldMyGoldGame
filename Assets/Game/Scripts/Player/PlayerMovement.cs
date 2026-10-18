@@ -106,7 +106,11 @@ public class PlayerMovement : MonoBehaviour
             velocity.y = -2f;
 
         Vector2 input = inputBlocked ? Vector2.zero : GetPlayerMovement();
-        float t = Mathf.Clamp01((float)(networkedPlayer.GoldBarCount / maxItemsForSlowdown)/playerUpgradeStats.WidthMultiplier);
+        float goldRatio = (float)networkedPlayer.GoldBarCount
+                  / maxItemsForSlowdown;
+        float t = Mathf.Clamp01(
+            goldRatio / playerUpgradeStats.WidthMultiplier
+        );
 
         // Springen (Taste gehalten = automatisch weiter springen)
         bool jumpHeld = !inputBlocked && inputActions.FPSController.Jump.IsPressed();

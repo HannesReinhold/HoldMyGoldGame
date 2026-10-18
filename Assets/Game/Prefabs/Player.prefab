@@ -269,7 +269,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 2856043236
+  GlobalObjectIdHash: 3059258757
   InScenePlacedSourceGlobalObjectIdHash: 0
   m_InScenePlacedDisabledByDefault: 0
   DeferredDespawnTick: 0
@@ -388,7 +388,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerMovement
   networkedPlayer: {fileID: 6540924311002986634}
   playerUpgradeStats: {fileID: 5203531855180082384}
-  maxItemsForSlowdown: 60
+  maxItemsForSlowdown: 40
   slowdownCurve:
     serializedVersion: 2
     m_Curve:
@@ -418,7 +418,7 @@ MonoBehaviour:
   lookSensitivity: 5
   knockbackDecelGround: 20
   knockbackDecelAir: 4
-  jumpHeight: 1.5
+  jumpHeight: 1
   wallBlocker: {fileID: 4760379984758195476}
   velocity: {x: 0, y: 0, z: 0}
   gravity: -9.81
@@ -509,7 +509,7 @@ MonoBehaviour:
   maxChargeTime: 1.5
   tapThreshold: 0.15
   minThrowForce: 2
-  throwForce: 50
+  throwForce: 25
   autoThrowAtMax: 0
   tapDropPoints:
   - {fileID: 823089907526971924}

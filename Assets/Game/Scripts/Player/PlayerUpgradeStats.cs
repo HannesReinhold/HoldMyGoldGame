@@ -8,7 +8,7 @@ public class PlayerUpgradeStats : NetworkBehaviour
     [SerializeField] private int maxUpgradeLevel = 5;
 
     [Tooltip("Percentage increase per upgrade level. 0.15 = 15%.")]
-    [SerializeField] private float increasePerLevel = 0.15f;
+    [SerializeField] private float increasePerLevel = 0.25f;
 
     private readonly NetworkVariable<int> runningSpeedLevel =
         new NetworkVariable<int>(0);
