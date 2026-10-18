@@ -1,3 +1,4 @@
+using System;
 using Game.Scripts.GameLogic;
 using TMPro;
 using UnityEngine;
@@ -13,6 +14,8 @@ public class HudManager : MonoBehaviour
     [SerializeField] private float timeWarningFullAt = 25f;
     [SerializeField] private float timerWarningScale = 1.4f;
     [SerializeField] private Color timeWarningColor = Color.red;
+    
+    [SerializeField] private bool debug = false;
 
     private NetworkedPlayer playerData;
 
@@ -25,6 +28,14 @@ public class HudManager : MonoBehaviour
     {
         _timerDefaultColor = Timer.color;
         _timerDefaultScale = Timer.rectTransform.localScale;
+    }
+
+    private void Start()
+    {
+        if (!debug)
+        {
+            Stage.enabled = false;
+        }
     }
 
     private void OnEnable()
