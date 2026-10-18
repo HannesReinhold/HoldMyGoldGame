@@ -8760,6 +8760,7 @@ MonoBehaviour:
   playSeconds: 300
   resultSeconds: 10
   allowSoloStart: 1
+  gameplaySceneName: Networking
   stage:
     UpdateTraits:
       MinSecondsBetweenUpdates: 0

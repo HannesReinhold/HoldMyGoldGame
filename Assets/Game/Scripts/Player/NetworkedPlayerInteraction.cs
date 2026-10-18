@@ -320,6 +320,10 @@ public class NetworkedPlayerInteraction : NetworkBehaviour
             // Nur geworfene Items sind gefährlich
             if (droppedItem.TryGetComponent(out ItemHitDamage hit))
                 hit.Arm(OwnerClientId);
+        }else
+        {
+            if (droppedItem.TryGetComponent(out ItemHitDamage hit))
+                hit.throwerClientId = OwnerClientId;
         }
 
         droppedItem.Spawn();

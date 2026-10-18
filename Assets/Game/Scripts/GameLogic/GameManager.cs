@@ -21,6 +21,11 @@ public class GameManager : NetworkBehaviour
 
     [SerializeField] private bool allowSoloStart = true;   // für Release-Builds abschaltbar
 
+    [Header("Runden-Reset")]
+    [SerializeField] private string gameplaySceneName = "Gameplay";
+
+    private bool roundResetInProgress;
+
     private bool soloRound;   // nur Server: aktuelle Runde wurde allein gestartet
     private int RequiredPlayers => soloRound ? 1 : requiredPlayers;
 
@@ -100,7 +105,11 @@ public class GameManager : NetworkBehaviour
         stage.OnValueChanged += HandleStageChanged;
 
         if (IsServer)
+        {
+            NetworkManager.SceneManager.OnLoadEventCompleted
+            += HandleLoadEventCompleted;
             SetStage(GameStage.JOIN);                    // Host ist in der Lobby
+        }
         else
             HandleStageChanged(GameStage.NONE, stage.Value);   // Spätbeitritt: aktuellen Stand übernehmen
     }
@@ -108,6 +117,13 @@ public class GameManager : NetworkBehaviour
     public override void OnNetworkDespawn()
     {
         stage.OnValueChanged -= HandleStageChanged;
+
+        if (NetworkManager != null && NetworkManager.SceneManager != null)
+        {
+            NetworkManager.SceneManager.OnLoadEventCompleted
+                -= HandleLoadEventCompleted;
+        }
+
         StageChanged?.Invoke(stage.Value, GameStage.NONE);
     }
 
@@ -155,8 +171,10 @@ public class GameManager : NetworkBehaviour
                 break;
 
             case GameStage.RESULT:
-                if (now >= stageEndTime.Value)
-                    SetStage(GameStage.JOIN);            // startet automatisch neu, wenn genug Spieler da sind
+                if (!roundResetInProgress && now >= stageEndTime.Value)
+                {
+                    BeginRoundReset();
+                }
                 break;
         }
     }
@@ -251,5 +269,69 @@ public class GameManager : NetworkBehaviour
 
         SceneManager.LoadScene("NewNetworkingTEst");
         MenuManager.Instance.OpenMainMenu();
+    }
+
+    private void BeginRoundReset()
+    {
+        if (!IsServer || roundResetInProgress)
+            return;
+
+        roundResetInProgress = true;
+
+        // Während des Ladens darf kein Countdown beginnen.
+        stageEndTime.Value = -1;
+
+        if (NetworkManager.SceneManager == null)
+        {
+            Debug.LogError("NetworkSceneManager ist nicht verfügbar.");
+            roundResetInProgress = false;
+            return;
+        }
+
+        var status = NetworkManager.SceneManager.LoadScene(
+            gameplaySceneName,
+            LoadSceneMode.Single
+        );
+
+        if (status != SceneEventProgressStatus.Started)
+        {
+            Debug.LogError(
+                $"Gameplay-Szene konnte nicht geladen werden: {status}"
+            );
+
+            roundResetInProgress = false;
+        }
+    }
+
+    private void HandleLoadEventCompleted(
+        string sceneName,
+        LoadSceneMode loadSceneMode,
+        System.Collections.Generic.List<ulong> clientsCompleted,
+        System.Collections.Generic.List<ulong> clientsTimedOut)
+    {
+        if (!IsServer || !roundResetInProgress)
+            return;
+
+        if (sceneName != gameplaySceneName ||
+            loadSceneMode != LoadSceneMode.Single)
+            return;
+
+        if (clientsTimedOut.Count > 0)
+        {
+            Debug.LogWarning(
+                $"Szenenwechsel: {clientsTimedOut.Count} Client(s) haben " +
+                "den Ladevorgang nicht rechtzeitig abgeschlossen."
+            );
+        }
+
+        // Alle Spieler, deren PlayerObject noch existiert, zurücksetzen.
+        ResetPlayersForRound();
+
+        roundResetInProgress = false;
+        soloRound = false;
+
+        // Update() startet den Countdown automatisch, wenn genug
+        // PlayerObjects vorhanden sind.
+        SetStage(GameStage.JOIN);
     }
 }
