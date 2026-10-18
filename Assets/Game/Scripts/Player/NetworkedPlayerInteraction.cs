@@ -27,6 +27,13 @@ public class NetworkedPlayerInteraction : NetworkBehaviour
     public float throwForce = 10;
     public bool autoThrowAtMax = false;     // true = bei voller Ladung automatisch werfen
 
+    [Header("Drop (kurzer Tap)")]
+    [Tooltip("Mehrere Punkte links/vorn/rechts. Gewählt wird der mit dem kürzesten Weg bis zum Boden.")]
+    public Transform[] tapDropPoints;
+    public float dropGroundCheckDistance = 3f;
+    public float maxDropHeightDiff = 1f;
+    public LayerMask dropSurfaceLayers = ~0;   // nur Welt, NICHT Player/PlayerHitbox
+
     private bool isCharging;
     private float chargeStartTime;
 
@@ -270,9 +277,20 @@ public class NetworkedPlayerInteraction : NetworkBehaviour
             force = Mathf.Lerp(minThrowForce, throwForce, t);
         }
 
-        Vector3 spawnPosition = dropPosition != null
-            ? dropPosition.position
-            : transform.position + transform.forward * dropForwardOffset + Vector3.up * dropUpOffset;
+        bool isTap = force <= 0f;
+
+        Vector3 spawnPosition;
+        if (isTap)
+        {
+            if (!TryGetTapDropPosition(out spawnPosition))
+                return;
+        }
+        else
+        {
+            spawnPosition = dropPosition != null
+                ? dropPosition.position
+                : transform.position + transform.forward * dropForwardOffset + Vector3.up * dropUpOffset;
+        }
 
         NetworkObject droppedItem = Instantiate(itemPrefab, spawnPosition, Quaternion.identity);
 
@@ -355,6 +373,57 @@ public class NetworkedPlayerInteraction : NetworkBehaviour
         int amount = zone.Take();
         if (amount > 0)
             networkedPlayer.itemCount.Value += amount;
+    }
+
+    private bool TryGetTapDropPosition(out Vector3 position)
+    {
+        position = default;
+        float bestDistance = float.MaxValue;
+        bool found = false;
+
+        if (tapDropPoints == null) return false;
+
+        foreach (Transform p in tapDropPoints)
+        {
+            if (p == null) continue;
+
+            if (TryEvaluateDropPoint(p.position, out float distToGround) && distToGround < bestDistance)
+            {
+                bestDistance = distToGround;   // bei Gleichstand gewinnt der frühere Eintrag der Liste
+                position = p.position;
+                found = true;
+            }
+        }
+        return found;
+    }
+
+    private bool TryEvaluateDropPoint(Vector3 p, out float distToGround)
+    {
+        distToGround = 0f;
+
+        // Wand zwischen Spieler und Punkt?
+        Vector3 chest = transform.position + Vector3.up * 0.8f;
+        if (Physics.Linecast(chest, p, dropSurfaceLayers, QueryTriggerInteraction.Ignore))
+            return false;
+
+        // Boden darunter? Sonst Abgrund oder Mapende
+        if (!Physics.Raycast(p, Vector3.down, out RaycastHit hit, dropGroundCheckDistance,
+                dropSurfaceLayers, QueryTriggerInteraction.Ignore))
+            return false;
+
+        if (Mathf.Abs(hit.point.y - transform.position.y) > maxDropHeightDiff)
+            return false;
+
+        distToGround = hit.distance;
+        return true;
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        if (tapDropPoints == null) return;
+        Gizmos.color = Color.green;
+        foreach (var p in tapDropPoints)
+            if (p != null) Gizmos.DrawWireSphere(p.position, 0.15f);
     }
 }
 
