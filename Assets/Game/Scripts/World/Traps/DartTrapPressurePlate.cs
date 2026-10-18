@@ -20,6 +20,15 @@ public class DartTrapPressurePlate : NetworkBehaviour
     [Header("Trap Settings")]
     [SerializeField] private bool requireWeightRemovalToRearm = true;
 
+    [Header("Plate Movement")]
+    [SerializeField] private Transform plateMesh;
+    [SerializeField] private float pressDistance = 0.05f;
+    [SerializeField] private float moveSpeed = 5f;
+
+    private Vector3 plateUpPosition;
+    private Vector3 plateDownPosition;
+    private bool platePressed;
+
     private bool isArmed = true;
 
     private readonly NetworkVariable<float> totalWeight =
@@ -34,17 +43,34 @@ public class DartTrapPressurePlate : NetworkBehaviour
             NetworkVariableReadPermission.Everyone,
             NetworkVariableWritePermission.Server);
 
+    // Synchronizes the pressed state so all clients see the same movement.
+    private readonly NetworkVariable<bool> isPressed =
+        new NetworkVariable<bool>(
+            false,
+            NetworkVariableReadPermission.Everyone,
+            NetworkVariableWritePermission.Server);
+
     public float TotalWeight => totalWeight.Value;
     public bool IsActivated => isActivated.Value;
 
     private void Awake()
     {
         GetComponent<Collider>().isTrigger = true;
+
+        if (plateMesh != null)
+        {
+            plateUpPosition = plateMesh.localPosition;
+            plateDownPosition =
+                plateUpPosition - Vector3.up * pressDistance;
+        }
     }
 
     public override void OnNetworkSpawn()
     {
         isActivated.OnValueChanged += OnActivationChanged;
+        isPressed.OnValueChanged += OnPressedChanged;
+
+        UpdatePlateTarget();
 
         if (isActivated.Value)
             FireTrap();
@@ -53,6 +79,36 @@ public class DartTrapPressurePlate : NetworkBehaviour
     public override void OnNetworkDespawn()
     {
         isActivated.OnValueChanged -= OnActivationChanged;
+        isPressed.OnValueChanged -= OnPressedChanged;
+    }
+
+    private void Update()
+    {
+        if (plateMesh == null)
+            return;
+
+        Vector3 target = isPressed.Value
+            ? plateDownPosition
+            : plateUpPosition;
+
+        plateMesh.localPosition = Vector3.MoveTowards(
+            plateMesh.localPosition,
+            target,
+            moveSpeed * Time.deltaTime);
+    }
+
+    private void OnPressedChanged(bool previous, bool current)
+    {
+        UpdatePlateTarget();
+    }
+
+    private void UpdatePlateTarget()
+    {
+        if (plateMesh == null)
+            return;
+
+        // Positions are initialized from the mesh's starting position.
+        plateMesh.localPosition = plateMesh.localPosition;
     }
 
     private void OnTriggerEnter(Collider other)
@@ -65,6 +121,7 @@ public class DartTrapPressurePlate : NetworkBehaviour
 
         if (player != null && player.IsSpawned)
         {
+            SetPressed(true);
             ChangeWeight(player.GoldBarCount);
             return;
         }
@@ -73,7 +130,10 @@ public class DartTrapPressurePlate : NetworkBehaviour
             other.GetComponentInParent<PickableItem>();
 
         if (item != null)
+        {
+            SetPressed(true);
             ChangeWeight(itemWeight);
+        }
     }
 
     private void OnTriggerExit(Collider other)
@@ -87,6 +147,7 @@ public class DartTrapPressurePlate : NetworkBehaviour
         if (player != null && player.IsSpawned)
         {
             ChangeWeight(-player.GoldBarCount);
+            UpdatePressedState();
             return;
         }
 
@@ -94,7 +155,46 @@ public class DartTrapPressurePlate : NetworkBehaviour
             other.GetComponentInParent<PickableItem>();
 
         if (item != null)
+        {
             ChangeWeight(-itemWeight);
+            UpdatePressedState();
+        }
+    }
+
+    private void SetPressed(bool pressed)
+    {
+        if (!IsServer || isPressed.Value == pressed)
+            return;
+
+        isPressed.Value = pressed;
+    }
+
+    private void UpdatePressedState()
+    {
+        // Check whether anything remains on the plate.
+        // The trigger collider is used to detect overlapping objects.
+        Collider plateCollider = GetComponent<Collider>();
+        Collider[] hits = Physics.OverlapBox(
+            plateCollider.bounds.center,
+            plateCollider.bounds.extents,
+            plateCollider.transform.rotation);
+
+        bool somethingOnPlate = false;
+
+        foreach (Collider hit in hits)
+        {
+            if (hit == plateCollider || hit.isTrigger)
+                continue;
+
+            if (hit.GetComponentInParent<NetworkedPlayer>() != null ||
+                hit.GetComponentInParent<PickableItem>() != null)
+            {
+                somethingOnPlate = true;
+                break;
+            }
+        }
+
+        SetPressed(somethingOnPlate);
     }
 
     private void ChangeWeight(float amount)
@@ -121,7 +221,6 @@ public class DartTrapPressurePlate : NetworkBehaviour
             $"{requiredWeight:F1} kg");
     }
 
-
     private void OnActivationChanged(bool previous, bool current)
     {
         if (current)
@@ -132,14 +231,13 @@ public class DartTrapPressurePlate : NetworkBehaviour
     }
 
     private void FireTrap()
-{
-    if (!IsServer || !IsSpawned)
-        return;
+    {
+        if (!IsServer || !IsSpawned)
+            return;
 
-    if (dartTrap != null)
-        dartTrap.Fire();
-    else
-        Debug.LogWarning($"{name}: No DartTrap assigned.", this);
+        if (dartTrap != null)
+            dartTrap.Fire();
+        else
+            Debug.LogWarning($"{name}: No DartTrap assigned.", this);
+    }
 }
-}
-
