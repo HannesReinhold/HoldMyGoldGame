@@ -83,8 +83,16 @@ public class GameManager : NetworkBehaviour
         inputActions.Enable();
     }
 
-    private void OnDestroy()
+    public override void OnDestroy()
     {
+        base.OnDestroy();
+
+        if (Instance == this)
+        {
+            worldManager?.OnDestroy();
+            Instance = null;
+        }
+
         if (inputActions == null) return;
 
         inputActions.FPSController.PauseMenu.performed -= OnPauseInput;
@@ -96,7 +104,9 @@ public class GameManager : NetworkBehaviour
 
     private void Start()
     {
-        MenuManager.Instance.OpenMainMenu();
+        if (MenuManager.Instance != null)
+            MenuManager.Instance.OpenMainMenu();
+
         worldManager.Start();
     }
 
@@ -137,9 +147,16 @@ public class GameManager : NetworkBehaviour
 
     public void ApplyStageToLocalPlayer()
     {
-        if (localPlayer != null)
-            localPlayer.SetControlsBlocked(!ControlsAllowedByStage);
-        localPlayer.playerMovement.SetEnableMovement(ControlsAllowedByStage);
+        if (localPlayer == null)
+            return;
+
+        localPlayer.SetControlsBlocked(!ControlsAllowedByStage);
+
+        if (localPlayer.playerMovement != null)
+            localPlayer.playerMovement.SetEnableMovement(ControlsAllowedByStage);
+
+        // Kamera (Menue- oder Spielerkamera) fuer den jetzt bekannten lokalen Spieler nachziehen
+        ApplyStageCamera(CurrentStage);
     }
 
     // ---------- Server-Logik ----------
@@ -269,10 +286,20 @@ public class GameManager : NetworkBehaviour
     public void LeaveGame()
     {
         Debug.Log("Leave Game...");
-        ServerDiscoveryManager.Instance.Disconnect();
 
-        SceneManager.LoadScene("NewNetworkingTEst");
-        MenuManager.Instance.OpenMainMenu();
+        if (ServerDiscoveryManager.Instance != null)
+            ServerDiscoveryManager.Instance.Disconnect();
+        else if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening)
+            NetworkManager.Singleton.Shutdown();
+
+        // Gameplay-Szene neu laden, damit Zonen, Items und Fallen wieder im Ausgangszustand sind
+        if (Application.CanStreamedLevelBeLoaded(gameplaySceneName))
+            SceneManager.LoadScene(gameplaySceneName);
+        else
+            Debug.LogError($"Szene '{gameplaySceneName}' ist nicht in den Build Settings.");
+
+        if (MenuManager.Instance != null)
+            MenuManager.Instance.OpenMainMenu();
     }
 
     private void BeginRoundReset()

@@ -4,7 +4,6 @@ using TMPro;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
-using FMODUnity;
 
 public class NetworkedPlayer : NetworkBehaviour
 {
@@ -142,15 +141,22 @@ public class NetworkedPlayer : NetworkBehaviour
 
         if (IsOwner)
         {
-            GameManager.Instance.localPlayer = this;
-            GameManager.Instance.ApplyStageToLocalPlayer();
-
             health.OnValueChanged += onOwnHealthChanged;
-            MenuManager.Instance.Hint.enabled = false;
-            if (GameManager.Instance != null)
-                GameManager.Instance.StageChanged += OnStageChanged;
             itemCount.OnValueChanged += OnOwnItemCountChanged;
+            SetHint(false);
+
+            if (GameManager.Instance != null)
+            {
+                GameManager.Instance.StageChanged += OnStageChanged;
+                GameManager.Instance.localPlayer = this;
+                GameManager.Instance.ApplyStageToLocalPlayer();
+
+                // Hinweis fuer die aktuelle Phase sofort anzeigen (z. B. in der Lobby)
+                OnStageChanged(GameStage.NONE, GameManager.Instance.CurrentStage);
+            }
         }
+
+        walkingStateSent = false;
         
         // subscribe to walking
         isWalkingNetworked.OnValueChanged += OnWalkingStateChanged;
@@ -168,24 +174,37 @@ public class NetworkedPlayer : NetworkBehaviour
         }
     }
 
+    private void SetHint(bool visible, string text = null)
+    {
+        var menu = MenuManager.Instance;
+        if (menu == null || menu.Hint == null)
+            return;
+
+        menu.Hint.enabled = visible;
+
+        if (text != null)
+            menu.Hint.text = text;
+    }
+
     private void OnStageChanged(GameStage oldStage, GameStage newStage)
     {
         if (newStage == GameStage.PLAY && oldStage == GameStage.COUNTDOWN)
         {
-            MenuManager.Instance.Hint.enabled = true;
             hintNumber = 1;
-            MenuManager.Instance.Hint.text = "! Pickup gold using 'E' (take)";
-        }  else if (newStage == GameStage.JOIN)
+            SetHint(true, "! Pickup gold using 'E' (take)");
+        }
+        else if (newStage == GameStage.JOIN && IsServer)
         {
-            MenuManager.Instance.Hint.enabled = true;
+            // Nur der Host kann mit P starten
             hintNumber = 3;
-            MenuManager.Instance.Hint.text = "! Start a singleplayer game using 'P'";
-        } 
-        else if (newStage == GameStage.COUNTDOWN || newStage == GameStage.NONE)
+            SetHint(true, "! Start a singleplayer game using 'P'");
+        }
+        else if (newStage == GameStage.COUNTDOWN || newStage == GameStage.NONE ||
+                 newStage == GameStage.JOIN || newStage == GameStage.RESULT)
         {
-            MenuManager.Instance.Hint.enabled = false;
             hintNumber = 0;
-        } 
+            SetHint(false);
+        }
     }
 
     public override void OnNetworkDespawn()
@@ -194,10 +213,18 @@ public class NetworkedPlayer : NetworkBehaviour
         {
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
-            MenuManager.Instance.Hint.enabled = false;
+            SetHint(false);
             hintNumber = 0;
+
             if (GameManager.Instance != null)
+            {
                 GameManager.Instance.StageChanged -= OnStageChanged;
+
+                if (GameManager.Instance.localPlayer == this)
+                    GameManager.Instance.localPlayer = null;
+            }
+
+            health.OnValueChanged -= onOwnHealthChanged;
             itemCount.OnValueChanged -= OnOwnItemCountChanged;
         }
 
@@ -216,7 +243,7 @@ public class NetworkedPlayer : NetworkBehaviour
         if (current > previous && current > 0)
         {
             hintNumber = 2;
-            MenuManager.Instance.Hint.text = "! Deposit gold at your spawn using 'Q' (drop)";
+            SetHint(true, "! Deposit gold at your spawn using 'Q' (drop)");
         }
     }
 
@@ -350,6 +377,7 @@ public class NetworkedPlayer : NetworkBehaviour
     {
         if (!IsOwner) return;
 
+        controlsBlocked = blocked;
         playerMovement.SetInputBlocked(blocked);
 
         if (interaction != null)
@@ -391,11 +419,12 @@ public class NetworkedPlayer : NetworkBehaviour
     private void UpdateMovementAudio()
     {
         if (playerMovement == null ||
+            !playerMovement.movementEnabled ||
             !playerMovement.grounded ||
             controlsBlocked ||
             health.Value <= 0)
         {
-            SetWalkingStateServerRpc(false);
+            SendWalkingState(false);
             footstepTimer = 0f;
             return;
         }
@@ -405,7 +434,7 @@ public class NetworkedPlayer : NetworkBehaviour
 
         bool wantsToWalk = inputMagnitude > movementInputThreshold;
 
-        SetWalkingStateServerRpc(wantsToWalk);
+        SendWalkingState(wantsToWalk);
 
         if (!wantsToWalk)
         {
@@ -432,6 +461,20 @@ public class NetworkedPlayer : NetworkBehaviour
             PlayFootstepServerRpc();
             footstepTimer = stepInterval;
         }
+    }
+
+    private bool lastSentWalking;
+    private bool walkingStateSent;
+
+    // Nur senden, wenn sich der Zustand aendert, sonst geht jeden Frame ein RPC raus
+    private void SendWalkingState(bool walking)
+    {
+        if (walkingStateSent && lastSentWalking == walking)
+            return;
+
+        walkingStateSent = true;
+        lastSentWalking = walking;
+        SetWalkingStateServerRpc(walking);
     }
 
     [ServerRpc]
@@ -555,6 +598,15 @@ public class NetworkedPlayer : NetworkBehaviour
         PlayPickupSoundServerRpc();
     }
 
+    // Nur Server: Aufheb-Sound fuer alle abspielen, ohne den Umweg ueber den Besitzer
+    public void PlayPickupSoundFromServer()
+    {
+        if (!IsServer || !IsSpawned)
+            return;
+
+        PlayPickupSoundClientRpc();
+    }
+
     [ServerRpc]
     private void PlayPickupSoundServerRpc(
         ServerRpcParams rpcParams = default)
@@ -582,7 +634,7 @@ public class NetworkedPlayer : NetworkBehaviour
         if (hintNumber == 2)
         {
             hintNumber = 0;
-            MenuManager.Instance.Hint.enabled = false;
+            SetHint(false);
         }
         
         if (!IsOwner || !IsSpawned)

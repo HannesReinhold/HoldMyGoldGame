@@ -159,12 +159,21 @@ public class NetworkedGoldBarStack : NetworkBehaviour
                 row * barSpacing.z);
 
             GameObject bar = Instantiate(goldBarPrefab, stackOrigin);
-            Random.InitState(column*rows+row+layer);
             bar.transform.localPosition = localPosition;
-            bar.transform.localRotation = Quaternion.identity * Quaternion.Euler(0f, Random.Range(-randomRotation, randomRotation), 0f);
+            bar.transform.localRotation = Quaternion.Euler(0f, StableRandomYaw(column * rows + row + layer), 0f);
 
             visualBars.Add(bar);
         }
+    }
+
+    // Deterministic per-slot rotation without disturbing the global random state.
+    private float StableRandomYaw(int seed)
+    {
+        Random.State previous = Random.state;
+        Random.InitState(seed);
+        float yaw = Random.Range(-randomRotation, randomRotation);
+        Random.state = previous;
+        return yaw;
     }
 
     private void ClearStack()

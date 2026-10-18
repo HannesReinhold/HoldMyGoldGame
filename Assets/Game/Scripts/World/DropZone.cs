@@ -112,12 +112,21 @@ public class DropZone : HighlightableZone
             GameObject bar = Instantiate(goldBarPrefab, origin);
 
             bar.transform.localPosition = new Vector3(x, y, z);
-            Random.InitState(column * rows + row + layer);
-            bar.transform.localRotation = Quaternion.identity * Quaternion.Euler(0f, Random.Range(-randomRotation, randomRotation), 0f);
+            bar.transform.localRotation = Quaternion.Euler(0f, StableRandomYaw(column * rows + row + layer), 0f);
             bar.transform.localScale = Vector3.one * 2.5f;
 
             visualGoldBars.Add(bar);
         }
+    }
+
+    // Deterministische Drehung pro Platz, ohne den globalen Zufallszustand zu verstellen
+    private float StableRandomYaw(int seed)
+    {
+        Random.State previous = Random.state;
+        Random.InitState(seed);
+        float yaw = Random.Range(-randomRotation, randomRotation);
+        Random.state = previous;
+        return yaw;
     }
 
     private void ClearGoldBarStack()

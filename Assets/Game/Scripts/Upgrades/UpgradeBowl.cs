@@ -122,13 +122,13 @@ public class UpgradeBowl : NetworkBehaviour
             switch (upgradeType)
             {
                 case UpgradeType.RunningSpeed:
-                    upgradeText.text = "Running Seeed";
+                    upgradeText.text = "Running Speed";
                     break;
                 case UpgradeType.PickupSpeed:
-                    upgradeText.text = "Pickup Seeed";
+                    upgradeText.text = "Pickup Speed";
                     break;
                 case UpgradeType.ThrowSpeed:
-                    upgradeText.text = "Throw Seeed";
+                    upgradeText.text = "Throw Speed";
                     break;
                 case UpgradeType.Width:
                     upgradeText.text = "Cart Width";

@@ -1,5 +1,4 @@
 
-using Unity.Collections.LowLevel.Unsafe;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -163,7 +162,8 @@ public class NetworkedPlayerInteraction : NetworkBehaviour
         // CHeck if item in front of player cam
         Ray ray = new Ray(playerCamera.transform.position, playerCamera.transform.forward);
 
-        if (Physics.Raycast(ray, out RaycastHit hit, highlightRange, pickupLayers, QueryTriggerInteraction.Ignore))
+        // pickupRange statt highlightRange: der Server prueft gegen pickupRange und wuerde sonst ablehnen
+        if (Physics.Raycast(ray, out RaycastHit hit, pickupRange, pickupLayers, QueryTriggerInteraction.Ignore))
         {
             Debug.Log("Collision" + hit.collider.gameObject);
 
@@ -185,8 +185,9 @@ public class NetworkedPlayerInteraction : NetworkBehaviour
         if (!IsOwner || !IsSpawned || !enableInteractions) return;
         if (networkedPlayer.GoldBarCount <= 0) return;
 
-        // In einer Dropzone wird sofort eingezahlt, nie geworfen
-        if (aimedZone is DropZone zone)
+        // In der eigenen Dropzone wird sofort eingezahlt, nie geworfen.
+        // Beim Gegner lehnt der Server das Einzahlen ab, dort wird also normal geworfen.
+        if (aimedZone is DropZone zone && zone.ownerSlot == networkedPlayer.PlayerSlot)
         {
             DepositToDropZoneServerRpc(zone.NetworkObject);
             networkedPlayer.PlayDepositSound();
@@ -354,7 +355,7 @@ public class NetworkedPlayerInteraction : NetworkBehaviour
         if (amount > 0)
         {
             networkedPlayer.itemCount.Value += amount;
-            networkedPlayer.PlayPickupSound();
+            networkedPlayer.PlayPickupSoundFromServer();
         }
     }
 

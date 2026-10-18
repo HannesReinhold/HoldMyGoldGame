@@ -84,7 +84,11 @@ public class MenuManager : MonoBehaviour
         if (discoveryStatusText != null)
             discoveryStatusText.text = "Host a game or enter a join code.";
 
-        relayManager.JoinCodeReady += OnRelayJoinCodeReady;
+        if (relayManager != null)
+        {
+            relayManager.JoinCodeReady += OnRelayJoinCodeReady;
+            relayManager.OperationFailed += OnRelayOperationFailed;
+        }
     }
 
     private void OnDestroy()
@@ -102,7 +106,10 @@ public class MenuManager : MonoBehaviour
             Instance = null;
 
         if (relayManager != null)
+        {
             relayManager.JoinCodeReady -= OnRelayJoinCodeReady;
+            relayManager.OperationFailed -= OnRelayOperationFailed;
+        }
     }
 
     private void OnStageChanged(GameStage oldStage, GameStage newStage)
@@ -111,33 +118,46 @@ public class MenuManager : MonoBehaviour
         {
             EnableMenu();
             ScoreEvaluator.Evaluate(this);
-            lobbyMenu.SetActive(false);
-            scoreboard.SetActive(true);
+
+            if (lobbyMenu != null)
+                lobbyMenu.SetActive(false);
+
+            SetScoreboardVisible(true);
             HideHud();
-            PlayAgainButton.SetActive(networkManager != null && networkManager.IsServer);
+
+            if (PlayAgainButton != null)
+                PlayAgainButton.SetActive(networkManager != null && networkManager.IsServer);
 
             return;
         }
         
         if (oldStage == GameStage.RESULT && newStage != GameStage.RESULT && newStage != GameStage.NONE)
         {
-            scoreboard.SetActive(false);
+            SetScoreboardVisible(false);
             DisableMenu();
             ShowHud();
         }
     }
 
+    private void SetScoreboardVisible(bool visible)
+    {
+        if (scoreboard != null)
+            scoreboard.SetActive(visible);
+    }
+
     public void onPlayAgain()
     {
-         DisableMenu();
-         scoreboard.SetActive(false);
-         ShowHud();
-         GameManager.Instance.PlayAgain();
+        DisableMenu();
+        SetScoreboardVisible(false);
+        ShowHud();
+
+        if (GameManager.Instance != null)
+            GameManager.Instance.PlayAgain();
     }
 
     public void onLeave()
     {
-        scoreboard.SetActive(false);
+        SetScoreboardVisible(false);
         OnLeavePressed();
     }
 
@@ -206,6 +226,18 @@ public class MenuManager : MonoBehaviour
         SetStatus("Relay created. Share the join code with the other player.");
     }
 
+    // Called by RelayHostJoinManager when hosting or joining fails.
+    private void OnRelayOperationFailed(string message)
+    {
+        connectionAttempted = false;
+        enteredLobby = false;
+
+        if (joinCodeDisplayText != null)
+            joinCodeDisplayText.text = "";
+
+        SetStatus(message);
+    }
+
     private void OnClientConnected(ulong clientId)
     {
         if (networkManager == null ||
@@ -233,17 +265,31 @@ public class MenuManager : MonoBehaviour
             return;
         }
 
+        bool wasInLobby = enteredLobby;
+
         if (connectionAttempted && !enteredLobby)
-        {
             SetStatus("Connection failed or disconnected. Check the join code and try again.");
-        }
-        else if (enteredLobby)
-        {
-            SetStatus("Disconnected from the session.");
-        }
 
         connectionAttempted = false;
         enteredLobby = false;
+
+        if (wasInLobby)
+        {
+            // Dropped by the host (e.g. host left): go back to the main menu instead of
+            // staying in a dead world without a camera or cursor.
+            ReturnToMainMenuAfterDisconnect();
+            SetStatus("Disconnected from the session.");
+        }
+    }
+
+    private void ReturnToMainMenuAfterDisconnect()
+    {
+        if (GameManager.Instance != null)
+            GameManager.Instance.LeaveGame();
+        else
+            OpenMainMenu();
+
+        HideHud();
     }
 
     private void SetStatus(string message)
@@ -298,6 +344,7 @@ public class MenuManager : MonoBehaviour
     {
         Debug.Log("Open Main Menu");
 
+        SetScoreboardVisible(false);
         OpenLobbyMenu();
         EnableMenu();
         HideHud();
@@ -328,14 +375,25 @@ public class MenuManager : MonoBehaviour
 
     public void ClosePauseMenu()
     {
-        DisableMenu();
-
         if (pauseMenu != null)
             pauseMenu.SetActive(false);
 
-        ShowHud();
+        var gm = GameManager.Instance;
 
-        SetPlayerControlsBlocked(!GameManager.Instance.ControlsAllowedByStage);
+        if (gm != null && gm.CurrentStage == GameStage.RESULT)
+        {
+            // Keep the scoreboard (and its Play Again button) visible when unpausing in the result screen.
+            EnableMenu();
+            SetScoreboardVisible(true);
+            HideHud();
+        }
+        else
+        {
+            DisableMenu();
+            ShowHud();
+        }
+
+        SetPlayerControlsBlocked(gm == null || !gm.ControlsAllowedByStage);
     }
 
     public void DisableMenu()
@@ -387,7 +445,8 @@ public class MenuManager : MonoBehaviour
             GameManager.Instance.localPlayer.SetEnablePlayerCamera(!state);
         }
 
-        SetPlayerControlsBlocked(!GameManager.Instance.ControlsAllowedByStage);
+        if (GameManager.Instance != null)
+            SetPlayerControlsBlocked(!GameManager.Instance.ControlsAllowedByStage);
     }
 
     public void OpenLobbyMenu()

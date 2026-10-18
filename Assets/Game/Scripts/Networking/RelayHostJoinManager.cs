@@ -1,4 +1,3 @@
-
 using System;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -19,6 +18,12 @@ public class RelayHostJoinManager : MonoBehaviour
 
     public event System.Action<string> JoinCodeReady;
 
+    // Raised with a user-readable message when hosting or joining fails,
+    // so the menu does not stay stuck on "Creating..." / "Joining...".
+    public event System.Action<string> OperationFailed;
+
+    private bool busy;
+
     private async Task InitializeServices()
     {
         if (UnityServices.State != ServicesInitializationState.Initialized)
@@ -32,24 +37,41 @@ public class RelayHostJoinManager : MonoBehaviour
         }
     }
 
-    private void Awake()
+    // NetworkManager.Singleton is only assigned in its OnEnable, so caching it in
+    // Awake depends on script execution order. Resolve it lazily instead.
+    private bool ResolveNetwork()
     {
-        networkManager = NetworkManager.Singleton;
+        if (networkManager == null)
+            networkManager = NetworkManager.Singleton;
 
-        if (networkManager != null)
-        {
-            transport =
-                networkManager.GetComponent<UnityTransport>();
-        }
+        if (networkManager != null && transport == null)
+            transport = networkManager.GetComponent<UnityTransport>();
+
+        return networkManager != null && transport != null;
+    }
+
+    private void Fail(string message, Exception exception = null)
+    {
+        if (exception != null)
+            Debug.LogException(exception);
+        else
+            Debug.LogError(message);
+
+        OperationFailed?.Invoke(message);
     }
 
     public async void Host()
     {
+        if (busy)
+            return;
+
         try
         {
-            if (networkManager == null || transport == null)
+            busy = true;
+
+            if (!ResolveNetwork())
             {
-                Debug.LogError("NetworkManager or UnityTransport missing.");
+                Fail("NetworkManager or UnityTransport missing.");
                 return;
             }
 
@@ -65,6 +87,10 @@ public class RelayHostJoinManager : MonoBehaviour
                 await RelayService.Instance.CreateAllocationAsync(
                     maxConnections);
 
+            // This object may have been destroyed (scene change) while waiting.
+            if (this == null || !ResolveNetwork())
+                return;
+
             transport.UseWebSockets = true;
 
             transport.SetRelayServerData(
@@ -75,31 +101,42 @@ public class RelayHostJoinManager : MonoBehaviour
                 await RelayService.Instance.GetJoinCodeAsync(
                     allocation.AllocationId);
 
+            if (this == null)
+                return;
+
             JoinCodeReady?.Invoke(joinCode);
 
             if (networkManager.StartHost())
             {
                 Debug.Log("Relay host started. Join code: " + joinCode);
-                // Display joinCode in your lobby UI.
             }
             else
             {
-                Debug.LogError("NGO failed to start the host.");
+                Fail("Failed to start the host.");
             }
         }
         catch (Exception e)
         {
-            Debug.LogException(e);
+            Fail("Could not create the Relay session: " + e.Message, e);
+        }
+        finally
+        {
+            busy = false;
         }
     }
 
     public async void Join(string joinCode)
     {
+        if (busy)
+            return;
+
         try
         {
-            if (networkManager == null || transport == null)
+            busy = true;
+
+            if (!ResolveNetwork())
             {
-                Debug.LogError("NetworkManager or UnityTransport missing.");
+                Fail("NetworkManager or UnityTransport missing.");
                 return;
             }
 
@@ -111,7 +148,7 @@ public class RelayHostJoinManager : MonoBehaviour
 
             if (string.IsNullOrWhiteSpace(joinCode))
             {
-                Debug.LogError("Enter a Relay join code.");
+                Fail("Enter a Relay join code.");
                 return;
             }
 
@@ -121,6 +158,9 @@ public class RelayHostJoinManager : MonoBehaviour
                 await RelayService.Instance.JoinAllocationAsync(
                     joinCode.Trim());
 
+            if (this == null || !ResolveNetwork())
+                return;
+
             transport.UseWebSockets = true;
 
             transport.SetRelayServerData(
@@ -129,12 +169,16 @@ public class RelayHostJoinManager : MonoBehaviour
 
             if (!networkManager.StartClient())
             {
-                Debug.LogError("NGO failed to start the client.");
+                Fail("Failed to start the client.");
             }
         }
         catch (Exception e)
         {
-            Debug.LogException(e);
+            Fail("Could not join the Relay session. Check the join code: " + e.Message, e);
+        }
+        finally
+        {
+            busy = false;
         }
     }
 }

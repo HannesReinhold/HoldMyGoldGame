@@ -43,6 +43,7 @@ public class PlayerLookRig : NetworkBehaviour
     {
         public Transform t;
         public Quaternion baseLocal;
+        public Quaternion beforeApply;
         public Quaternion lastApplied;
         public bool hasApplied;
     }
@@ -141,8 +142,14 @@ public class PlayerLookRig : NetworkBehaviour
 
     private void Apply(BoneState b, float angle, Vector3 axis)
     {
-        if (b == null) return;
+        if (b == null || b.t == null) return;
 
+        // Hat seit dem letzten Frame niemand (Animator) den Knochen neu gesetzt, steht noch unsere
+        // eigene Neigung drin. Dann erst zuruecknehmen, sonst addiert sich die Drehung jeden Frame auf.
+        if (b.hasApplied && Quaternion.Angle(b.t.localRotation, b.lastApplied) < 0.01f)
+            b.t.localRotation = b.beforeApply;
+
+        b.beforeApply = b.t.localRotation;
         b.t.rotation = Quaternion.AngleAxis(angle, axis) * b.t.rotation;
         b.lastApplied = b.t.localRotation;
         b.hasApplied = true;

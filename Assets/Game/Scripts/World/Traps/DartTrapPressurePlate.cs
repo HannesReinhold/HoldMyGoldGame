@@ -1,4 +1,3 @@
-
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
@@ -26,11 +25,16 @@ public class DartTrapPressurePlate : NetworkBehaviour
     [SerializeField] private float pressDistance = 0.05f;
     [SerializeField] private float moveSpeed = 5f;
 
+    [Header("FMOD Sound")]
+    [SerializeField] private EventReference pressedSound;
+
     private Vector3 plateUpPosition;
     private Vector3 plateDownPosition;
-    private bool platePressed;
 
     private bool isArmed = true;
+
+    // Server only: what is currently standing or lying on the plate.
+    private readonly PlateOccupants occupants = new PlateOccupants();
 
     private readonly NetworkVariable<float> totalWeight =
         new NetworkVariable<float>(
@@ -38,6 +42,7 @@ public class DartTrapPressurePlate : NetworkBehaviour
             NetworkVariableReadPermission.Everyone,
             NetworkVariableWritePermission.Server);
 
+    // True while the trap has fired and has not been re-armed yet.
     private readonly NetworkVariable<bool> isActivated =
         new NetworkVariable<bool>(
             false,
@@ -54,9 +59,6 @@ public class DartTrapPressurePlate : NetworkBehaviour
     public float TotalWeight => totalWeight.Value;
     public bool IsActivated => isActivated.Value;
 
-    [Header("FMOD Sound")]
-    [SerializeField] private EventReference pressedSound;
-
     private void Awake()
     {
         GetComponent<Collider>().isTrigger = true;
@@ -72,22 +74,31 @@ public class DartTrapPressurePlate : NetworkBehaviour
     public override void OnNetworkSpawn()
     {
         isActivated.OnValueChanged += OnActivationChanged;
-        isPressed.OnValueChanged += OnPressedChanged;
 
-        UpdatePlateTarget();
+        if (IsServer)
+        {
+            occupants.Clear();
+            isArmed = true;
+            totalWeight.Value = 0f;
+            isActivated.Value = false;
+            isPressed.Value = false;
+        }
 
-        if (isActivated.Value)
-            FireTrap();
+        // Snap to the synchronized state instead of animating from wherever the mesh was.
+        if (plateMesh != null)
+            plateMesh.localPosition = isPressed.Value ? plateDownPosition : plateUpPosition;
     }
 
     public override void OnNetworkDespawn()
     {
         isActivated.OnValueChanged -= OnActivationChanged;
-        isPressed.OnValueChanged -= OnPressedChanged;
     }
 
     private void Update()
     {
+        if (IsServer && IsSpawned)
+            RecalculateWeight();
+
         if (plateMesh == null)
             return;
 
@@ -101,67 +112,45 @@ public class DartTrapPressurePlate : NetworkBehaviour
             moveSpeed * Time.deltaTime);
     }
 
-    private void OnPressedChanged(bool previous, bool current)
-    {
-        UpdatePlateTarget();
-    }
-
-    private void UpdatePlateTarget()
-    {
-        if (plateMesh == null)
-            return;
-
-        // Positions are initialized from the mesh's starting position.
-        plateMesh.localPosition = plateMesh.localPosition;
-    }
-
     private void OnTriggerEnter(Collider other)
     {
-        if (!IsServer || !IsSpawned || isActivated.Value)
+        if (!IsServer || !IsSpawned)
             return;
 
-        NetworkedPlayer player =
-            other.GetComponentInParent<NetworkedPlayer>();
-
-        if (player != null && player.IsSpawned)
-        {
-            SetPressed(true);
-            ChangeWeight(player.GoldBarCount);
-            return;
-        }
-
-        PickableItem item =
-            other.GetComponentInParent<PickableItem>();
-
-        if (item != null)
-        {
-            SetPressed(true);
-            ChangeWeight(itemWeight);
-        }
+        occupants.OnEnter(other);
     }
 
     private void OnTriggerExit(Collider other)
     {
-        if (!IsServer || !IsSpawned || isActivated.Value)
+        if (!IsServer || !IsSpawned)
             return;
 
-        NetworkedPlayer player =
-            other.GetComponentInParent<NetworkedPlayer>();
+        occupants.OnExit(other);
+    }
 
-        if (player != null && player.IsSpawned)
+    // Server only. Recomputed every frame so that gold picked up or deposited while
+    // standing on the plate, picked-up items and disconnected players are all accounted for.
+    private void RecalculateWeight()
+    {
+        float weight = occupants.ComputeWeight(itemWeight);
+
+        SetPressed(occupants.Any);
+
+        if (!Mathf.Approximately(totalWeight.Value, weight))
+            totalWeight.Value = weight;
+
+        bool thresholdReached = weight >= requiredWeight;
+
+        if (thresholdReached && isArmed)
         {
-            ChangeWeight(-player.GoldBarCount);
-            UpdatePressedState();
-            return;
+            isArmed = false;
+            isActivated.Value = true;
+            FireTrap();
         }
-
-        PickableItem item =
-            other.GetComponentInParent<PickableItem>();
-
-        if (item != null)
+        else if (!thresholdReached && !isArmed && requireWeightRemovalToRearm)
         {
-            ChangeWeight(-itemWeight);
-            UpdatePressedState();
+            isArmed = true;
+            isActivated.Value = false;
         }
     }
 
@@ -171,68 +160,15 @@ public class DartTrapPressurePlate : NetworkBehaviour
             return;
 
         isPressed.Value = pressed;
-    }
 
-    private void UpdatePressedState()
-    {
-        // Check whether anything remains on the plate.
-        // The trigger collider is used to detect overlapping objects.
-        Collider plateCollider = GetComponent<Collider>();
-        Collider[] hits = Physics.OverlapBox(
-            plateCollider.bounds.center,
-            plateCollider.bounds.extents,
-            plateCollider.transform.rotation);
-
-        bool somethingOnPlate = false;
-
-        foreach (Collider hit in hits)
-        {
-            if (hit == plateCollider || hit.isTrigger)
-                continue;
-
-            if (hit.GetComponentInParent<NetworkedPlayer>() != null ||
-                hit.GetComponentInParent<PickableItem>() != null)
-            {
-                somethingOnPlate = true;
-                PlayPressedSoundClientRpc();
-                break;
-            }
-        }
-
-        SetPressed(somethingOnPlate);
-    }
-
-    private void ChangeWeight(float amount)
-    {
-        totalWeight.Value = Mathf.Max(
-            0f,
-            totalWeight.Value + amount);
-
-        bool thresholdReached =
-            totalWeight.Value >= requiredWeight;
-
-        if (thresholdReached && isArmed)
-        {
-            isArmed = false;
-            FireTrap();
-        }
-        else if (!thresholdReached && requireWeightRemovalToRearm)
-        {
-            isArmed = true;
-        }
-
-        Debug.Log(
-            $"{name}: {totalWeight.Value:F1} / " +
-            $"{requiredWeight:F1} kg");
+        if (pressed)
+            PlayPressedSoundClientRpc();
     }
 
     private void OnActivationChanged(bool previous, bool current)
     {
         if (current)
-        {
-            FireTrap();
             onActivated?.Invoke();
-        }
     }
 
     private void FireTrap()

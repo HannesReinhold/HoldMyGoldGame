@@ -46,6 +46,17 @@ public class PlayerMovement : MonoBehaviour
         inputBlocked = blocked;
     }
 
+    // 0 = leer, 1 = voll beladen (das Breiten-Upgrade erhoeht die Kapazitaet)
+    private float GetLoadRatio()
+    {
+        if (networkedPlayer == null || maxItemsForSlowdown <= 0)
+            return 0f;
+
+        float goldRatio = (float)networkedPlayer.GoldBarCount / maxItemsForSlowdown;
+        float capacity = playerUpgradeStats != null ? playerUpgradeStats.WidthMultiplier : 1f;
+        return Mathf.Clamp01(goldRatio / capacity);
+    }
+
     private void Awake()
     {
         inputActions = new InputSystem();
@@ -106,11 +117,7 @@ public class PlayerMovement : MonoBehaviour
             velocity.y = -2f;
 
         Vector2 input = inputBlocked ? Vector2.zero : GetPlayerMovement();
-        float goldRatio = (float)networkedPlayer.GoldBarCount
-                  / maxItemsForSlowdown;
-        float t = Mathf.Clamp01(
-            goldRatio / playerUpgradeStats.WidthMultiplier
-        );
+        float t = GetLoadRatio();
 
         // Springen (Taste gehalten = automatisch weiter springen)
         bool jumpHeld = !inputBlocked && inputActions.FPSController.Jump.IsPressed();
@@ -139,7 +146,8 @@ public class PlayerMovement : MonoBehaviour
 
     public void AddKnockback(Vector3 impulse)
     {
-        float t = Mathf.Clamp01((float)(networkedPlayer.GoldBarCount / maxItemsForSlowdown)/ playerUpgradeStats.WidthMultiplier);
+        // Vorher Ganzzahl-Division: t war unterhalb der Maximalladung immer 0
+        float t = GetLoadRatio();
         float factor = slowdownCurve.Evaluate(t);
         impulse *= factor;
         knockback = new Vector3(impulse.x, 0f, impulse.z);
@@ -161,6 +169,12 @@ public class PlayerMovement : MonoBehaviour
     private void OnDisable()
     {
         inputActions.Disable();
+    }
+
+    private void OnDestroy()
+    {
+        inputActions?.Dispose();
+        inputActions = null;
     }
 
     public Vector2 GetPlayerMovement()

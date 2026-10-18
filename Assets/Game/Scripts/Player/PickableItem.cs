@@ -42,6 +42,9 @@ public class PickableItem : NetworkBehaviour
         if ((groundLayers.value & (1 << collision.gameObject.layer)) == 0)
             return;
 
+        if (impactEvent.IsNull)
+            return;
+
         RuntimeManager.PlayOneShot(impactEvent, transform.position);
     }
 
