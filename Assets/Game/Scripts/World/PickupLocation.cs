@@ -9,6 +9,8 @@ public class PickupLocation : HighlightableZone
 
     private float nextAvailableTime;    // nur Server
 
+    public int numBars = 1000;
+
     // Nur auf dem Server aufrufen. Gibt die Anzahl zurück, die der Spieler bekommt.
     public int TryTake()
     {
