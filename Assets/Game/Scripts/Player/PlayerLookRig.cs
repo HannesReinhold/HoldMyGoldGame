@@ -98,12 +98,15 @@ public class PlayerLookRig : NetworkBehaviour
         Vector3 axis = transform.right;
 
         // 1) Eigene Rotation vom letzten Frame zurücknehmen
-        Restore(spineState);
-        Restore(headState);
+        //Restore(spineState);
+        //Restore(headState);
 
         // 3) Neigung anwenden
         Apply(spineState, pitch * spineWeight, axis);
         Apply(headState, pitch * headWeight, axis);
+
+        //ApplyPitch(spineState, pitch * spineWeight);
+        //ApplyPitch(headState, pitch * headWeight);
 
         // 4) Kamera
         if (IsOwner && cam != null && camBaseCached)
@@ -143,5 +146,18 @@ public class PlayerLookRig : NetworkBehaviour
         b.t.rotation = Quaternion.AngleAxis(angle, axis) * b.t.rotation;
         b.lastApplied = b.t.localRotation;
         b.hasApplied = true;
+    }
+
+    private void ApplyPitch(BoneState b, float angle)
+    {
+        if (b == null || b.t == null) return;
+
+        // Aktuelle Rotation als Basis verwenden
+        Quaternion animatedLocalRotation = b.t.localRotation;
+
+        // Pitch relativ zur lokalen Rotation hinzufügen
+        b.t.localRotation =
+            animatedLocalRotation *
+            Quaternion.Euler(angle, 0f, 0f);
     }
 }

@@ -1,0 +1,207 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!319 &31900000
+AvatarMask:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: PLayerHeadMask
+  m_Mask: 01000000010000000000000001000000010000000100000001000000010000000100000001000000010000000100000001000000u
+  m_Elements:
+  - m_Path: 
+    m_Weight: 1
+  - m_Path: Armature
+    m_Weight: 1
+  - m_Path: Armature/Geometry
+    m_Weight: 1
+  - m_Path: Armature/Geometry/boots_LOD0
+    m_Weight: 1
+  - m_Path: Armature/Geometry/boots_LOD1
+    m_Weight: 1
+  - m_Path: Armature/Geometry/boots_LOD2
+    m_Weight: 1
+  - m_Path: Armature/Geometry/boots_LOD3
+    m_Weight: 1
+  - m_Path: Armature/Geometry/cap_LOD0
+    m_Weight: 1
+  - m_Path: Armature/Geometry/cap_LOD1
+    m_Weight: 1
+  - m_Path: Armature/Geometry/cap_LOD2
+    m_Weight: 1
+  - m_Path: Armature/Geometry/cap_LOD3
+    m_Weight: 1
+  - m_Path: Armature/Geometry/haircut_LOD0
+    m_Weight: 1
+  - m_Path: Armature/Geometry/haircut_LOD1
+    m_Weight: 1
+  - m_Path: Armature/Geometry/haircut_LOD2
+    m_Weight: 1
+  - m_Path: Armature/Geometry/haircut_LOD3
+    m_Weight: 1
+  - m_Path: Armature/Geometry/Head1_LOD0
+    m_Weight: 1
+  - m_Path: Armature/Geometry/Head1_LOD1
+    m_Weight: 1
+  - m_Path: Armature/Geometry/Head1_LOD2
+    m_Weight: 1
+  - m_Path: Armature/Geometry/Head1_LOD3
+    m_Weight: 1
+  - m_Path: Armature/Geometry/helmet_LOD0
+    m_Weight: 1
+  - m_Path: Armature/Geometry/helmet_LOD1
+    m_Weight: 1
+  - m_Path: Armature/Geometry/helmet_LOD2
+    m_Weight: 1
+  - m_Path: Armature/Geometry/helmet_LOD3
+    m_Weight: 1
+  - m_Path: Armature/Geometry/overall_LOD0
+    m_Weight: 1
+  - m_Path: Armature/Geometry/overall_LOD1
+    m_Weight: 1
+  - m_Path: Armature/Geometry/overall_LOD2
+    m_Weight: 1
+  - m_Path: Armature/Geometry/overall_LOD3
+    m_Weight: 1
+  - m_Path: Armature/Geometry/pants_LOD0
+    m_Weight: 1
+  - m_Path: Armature/Geometry/pants_LOD1
+    m_Weight: 1
+  - m_Path: Armature/Geometry/pants_LOD2
+    m_Weight: 1
+  - m_Path: Armature/Geometry/pants_LOD3
+    m_Weight: 1
+  - m_Path: Armature/Geometry/shirt_LOD0
+    m_Weight: 1
+  - m_Path: Armature/Geometry/shirt_LOD1
+    m_Weight: 1
+  - m_Path: Armature/Geometry/shirt_LOD2
+    m_Weight: 1
+  - m_Path: Armature/Geometry/shirt_LOD3
+    m_Weight: 1
+  - m_Path: Armature/Geometry/singlet_LOD0
+    m_Weight: 1
+  - m_Path: Armature/Geometry/singlet_LOD1
+    m_Weight: 1
+  - m_Path: Armature/Geometry/singlet_LOD2
+    m_Weight: 1
+  - m_Path: Armature/Geometry/singlet_LOD3
+    m_Weight: 1
+  - m_Path: Armature/Geometry/toolbelt_LOD0
+    m_Weight: 1
+  - m_Path: Armature/Geometry/toolbelt_LOD1
+    m_Weight: 1
+  - m_Path: Armature/Geometry/toolbelt_LOD2
+    m_Weight: 1
+  - m_Path: Armature/Geometry/toolbelt_LOD3
+    m_Weight: 1
+  - m_Path: Armature/Skeleton
+    m_Weight: 1
+  - m_Path: Armature/Skeleton/Handyman
+    m_Weight: 1
+  - m_Path: Armature/Skeleton/Handyman/Handyman Pelvis
+    m_Weight: 1
+  - m_Path: Armature/Skeleton/Handyman/Handyman Pelvis/Handyman L Thigh
+    m_Weight: 1
+  - m_Path: Armature/Skeleton/Handyman/Handyman Pelvis/Handyman L Thigh/Handyman L Calf
+    m_Weight: 1
+  - m_Path: Armature/Skeleton/Handyman/Handyman Pelvis/Handyman L Thigh/Handyman L Calf/Handyman L Foot
+    m_Weight: 1
+  - m_Path: Armature/Skeleton/Handyman/Handyman Pelvis/Handyman L Thigh/Handyman L Calf/Handyman L Foot/Handyman L Toe0
+    m_Weight: 1
+  - m_Path: Armature/Skeleton/Handyman/Handyman Pelvis/Handyman R Thigh
+    m_Weight: 1
+  - m_Path: Armature/Skeleton/Handyman/Handyman Pelvis/Handyman R Thigh/Handyman R Calf
+    m_Weight: 1
+  - m_Path: Armature/Skeleton/Handyman/Handyman Pelvis/Handyman R Thigh/Handyman R Calf/Handyman R Foot
+    m_Weight: 1
+  - m_Path: Armature/Skeleton/Handyman/Handyman Pelvis/Handyman R Thigh/Handyman R Calf/Handyman R Foot/Handyman R Toe0
+    m_Weight: 1
+  - m_Path: Armature/Skeleton/Handyman/Handyman Pelvis/Handyman Spine
+    m_Weight: 1
+  - m_Path: Armature/Skeleton/Handyman/Handyman Pelvis/Handyman Spine/Handyman Spine1
+    m_Weight: 1
+  - m_Path: Armature/Skeleton/Handyman/Handyman Pelvis/Handyman Spine/Handyman Spine1/Handyman Spine2
+    m_Weight: 1
+  - m_Path: Armature/Skeleton/Handyman/Handyman Pelvis/Handyman Spine/Handyman Spine1/Handyman Spine2/Handyman L Clavicle
+    m_Weight: 1
+  - m_Path: Armature/Skeleton/Handyman/Handyman Pelvis/Handyman Spine/Handyman Spine1/Handyman Spine2/Handyman L Clavicle/Handyman L UpperArm
+    m_Weight: 1
+  - m_Path: Armature/Skeleton/Handyman/Handyman Pelvis/Handyman Spine/Handyman Spine1/Handyman Spine2/Handyman L Clavicle/Handyman L UpperArm/Handyman L Forearm
+    m_Weight: 1
+  - m_Path: Armature/Skeleton/Handyman/Handyman Pelvis/Handyman Spine/Handyman Spine1/Handyman Spine2/Handyman L Clavicle/Handyman L UpperArm/Handyman L Forearm/Handyman L Hand
+    m_Weight: 1
+  - m_Path: Armature/Skeleton/Handyman/Handyman Pelvis/Handyman Spine/Handyman Spine1/Handyman Spine2/Handyman L Clavicle/Handyman L UpperArm/Handyman L Forearm/Handyman L Hand/Handyman L Finger1
+    m_Weight: 1
+  - m_Path: Armature/Skeleton/Handyman/Handyman Pelvis/Handyman Spine/Handyman Spine1/Handyman Spine2/Handyman L Clavicle/Handyman L UpperArm/Handyman L Forearm/Handyman L Hand/Handyman L Finger1/Handyman L Finger11
+    m_Weight: 1
+  - m_Path: Armature/Skeleton/Handyman/Handyman Pelvis/Handyman Spine/Handyman Spine1/Handyman Spine2/Handyman L Clavicle/Handyman L UpperArm/Handyman L Forearm/Handyman L Hand/Handyman L Finger1/Handyman L Finger11/Handyman L Finger12
+    m_Weight: 1
+  - m_Path: Armature/Skeleton/Handyman/Handyman Pelvis/Handyman Spine/Handyman Spine1/Handyman Spine2/Handyman L Clavicle/Handyman L UpperArm/Handyman L Forearm/Handyman L Hand/Handyman L Finger2
+    m_Weight: 1
+  - m_Path: Armature/Skeleton/Handyman/Handyman Pelvis/Handyman Spine/Handyman Spine1/Handyman Spine2/Handyman L Clavicle/Handyman L UpperArm/Handyman L Forearm/Handyman L Hand/Handyman L Finger2/Handyman L Finger21
+    m_Weight: 1
+  - m_Path: Armature/Skeleton/Handyman/Handyman Pelvis/Handyman Spine/Handyman Spine1/Handyman Spine2/Handyman L Clavicle/Handyman L UpperArm/Handyman L Forearm/Handyman L Hand/Handyman L Finger2/Handyman L Finger21/Handyman L Finger22
+    m_Weight: 1
+  - m_Path: Armature/Skeleton/Handyman/Handyman Pelvis/Handyman Spine/Handyman Spine1/Handyman Spine2/Handyman L Clavicle/Handyman L UpperArm/Handyman L Forearm/Handyman L Hand/Handyman L Finger3
+    m_Weight: 1
+  - m_Path: Armature/Skeleton/Handyman/Handyman Pelvis/Handyman Spine/Handyman Spine1/Handyman Spine2/Handyman L Clavicle/Handyman L UpperArm/Handyman L Forearm/Handyman L Hand/Handyman L Finger3/Handyman L Finger31
+    m_Weight: 1
+  - m_Path: Armature/Skeleton/Handyman/Handyman Pelvis/Handyman Spine/Handyman Spine1/Handyman Spine2/Handyman L Clavicle/Handyman L UpperArm/Handyman L Forearm/Handyman L Hand/Handyman L Finger3/Handyman L Finger31/Handyman L Finger32
+    m_Weight: 1
+  - m_Path: Armature/Skeleton/Handyman/Handyman Pelvis/Handyman Spine/Handyman Spine1/Handyman Spine2/Handyman L Clavicle/Handyman L UpperArm/Handyman L Forearm/Handyman L Hand/Handyman L Finger4
+    m_Weight: 1
+  - m_Path: Armature/Skeleton/Handyman/Handyman Pelvis/Handyman Spine/Handyman Spine1/Handyman Spine2/Handyman L Clavicle/Handyman L UpperArm/Handyman L Forearm/Handyman L Hand/Handyman L Finger4/Handyman L Finger41
+    m_Weight: 1
+  - m_Path: Armature/Skeleton/Handyman/Handyman Pelvis/Handyman Spine/Handyman Spine1/Handyman Spine2/Handyman L Clavicle/Handyman L UpperArm/Handyman L Forearm/Handyman L Hand/Handyman L Finger4/Handyman L Finger41/Handyman L Finger42
+    m_Weight: 1
+  - m_Path: Armature/Skeleton/Handyman/Handyman Pelvis/Handyman Spine/Handyman Spine1/Handyman Spine2/Handyman L Clavicle/Handyman L UpperArm/Handyman L Forearm/Handyman L Hand/Handyman Left_ThumbProximal
+    m_Weight: 1
+  - m_Path: Armature/Skeleton/Handyman/Handyman Pelvis/Handyman Spine/Handyman Spine1/Handyman Spine2/Handyman L Clavicle/Handyman L UpperArm/Handyman L Forearm/Handyman L Hand/Handyman Left_ThumbProximal/Handyman Left_ThumbIntermediate
+    m_Weight: 1
+  - m_Path: Armature/Skeleton/Handyman/Handyman Pelvis/Handyman Spine/Handyman Spine1/Handyman Spine2/Handyman L Clavicle/Handyman L UpperArm/Handyman L Forearm/Handyman L Hand/Handyman Left_ThumbProximal/Handyman Left_ThumbIntermediate/Handyman Left_ThumbDistal
+    m_Weight: 1
+  - m_Path: Armature/Skeleton/Handyman/Handyman Pelvis/Handyman Spine/Handyman Spine1/Handyman Spine2/Handyman Neck
+    m_Weight: 1
+  - m_Path: Armature/Skeleton/Handyman/Handyman Pelvis/Handyman Spine/Handyman Spine1/Handyman Spine2/Handyman Neck/Handyman Head
+    m_Weight: 1
+  - m_Path: Armature/Skeleton/Handyman/Handyman Pelvis/Handyman Spine/Handyman Spine1/Handyman Spine2/Handyman R Clavicle
+    m_Weight: 1
+  - m_Path: Armature/Skeleton/Handyman/Handyman Pelvis/Handyman Spine/Handyman Spine1/Handyman Spine2/Handyman R Clavicle/Handyman R UpperArm
+    m_Weight: 1
+  - m_Path: Armature/Skeleton/Handyman/Handyman Pelvis/Handyman Spine/Handyman Spine1/Handyman Spine2/Handyman R Clavicle/Handyman R UpperArm/Handyman R Forearm
+    m_Weight: 1
+  - m_Path: Armature/Skeleton/Handyman/Handyman Pelvis/Handyman Spine/Handyman Spine1/Handyman Spine2/Handyman R Clavicle/Handyman R UpperArm/Handyman R Forearm/Handyman R Hand
+    m_Weight: 1
+  - m_Path: Armature/Skeleton/Handyman/Handyman Pelvis/Handyman Spine/Handyman Spine1/Handyman Spine2/Handyman R Clavicle/Handyman R UpperArm/Handyman R Forearm/Handyman R Hand/Handyman R Finger1
+    m_Weight: 1
+  - m_Path: Armature/Skeleton/Handyman/Handyman Pelvis/Handyman Spine/Handyman Spine1/Handyman Spine2/Handyman R Clavicle/Handyman R UpperArm/Handyman R Forearm/Handyman R Hand/Handyman R Finger1/Handyman R Finger11
+    m_Weight: 1
+  - m_Path: Armature/Skeleton/Handyman/Handyman Pelvis/Handyman Spine/Handyman Spine1/Handyman Spine2/Handyman R Clavicle/Handyman R UpperArm/Handyman R Forearm/Handyman R Hand/Handyman R Finger1/Handyman R Finger11/Handyman R Finger12
+    m_Weight: 1
+  - m_Path: Armature/Skeleton/Handyman/Handyman Pelvis/Handyman Spine/Handyman Spine1/Handyman Spine2/Handyman R Clavicle/Handyman R UpperArm/Handyman R Forearm/Handyman R Hand/Handyman R Finger2
+    m_Weight: 1
+  - m_Path: Armature/Skeleton/Handyman/Handyman Pelvis/Handyman Spine/Handyman Spine1/Handyman Spine2/Handyman R Clavicle/Handyman R UpperArm/Handyman R Forearm/Handyman R Hand/Handyman R Finger2/Handyman R Finger21
+    m_Weight: 1
+  - m_Path: Armature/Skeleton/Handyman/Handyman Pelvis/Handyman Spine/Handyman Spine1/Handyman Spine2/Handyman R Clavicle/Handyman R UpperArm/Handyman R Forearm/Handyman R Hand/Handyman R Finger2/Handyman R Finger21/Handyman R Finger22
+    m_Weight: 1
+  - m_Path: Armature/Skeleton/Handyman/Handyman Pelvis/Handyman Spine/Handyman Spine1/Handyman Spine2/Handyman R Clavicle/Handyman R UpperArm/Handyman R Forearm/Handyman R Hand/Handyman R Finger3
+    m_Weight: 1
+  - m_Path: Armature/Skeleton/Handyman/Handyman Pelvis/Handyman Spine/Handyman Spine1/Handyman Spine2/Handyman R Clavicle/Handyman R UpperArm/Handyman R Forearm/Handyman R Hand/Handyman R Finger3/Handyman R Finger31
+    m_Weight: 1
+  - m_Path: Armature/Skeleton/Handyman/Handyman Pelvis/Handyman Spine/Handyman Spine1/Handyman Spine2/Handyman R Clavicle/Handyman R UpperArm/Handyman R Forearm/Handyman R Hand/Handyman R Finger3/Handyman R Finger31/Handyman R Finger32
+    m_Weight: 1
+  - m_Path: Armature/Skeleton/Handyman/Handyman Pelvis/Handyman Spine/Handyman Spine1/Handyman Spine2/Handyman R Clavicle/Handyman R UpperArm/Handyman R Forearm/Handyman R Hand/Handyman R Finger4
+    m_Weight: 1
+  - m_Path: Armature/Skeleton/Handyman/Handyman Pelvis/Handyman Spine/Handyman Spine1/Handyman Spine2/Handyman R Clavicle/Handyman R UpperArm/Handyman R Forearm/Handyman R Hand/Handyman R Finger4/Handyman R Finger41
+    m_Weight: 1
+  - m_Path: Armature/Skeleton/Handyman/Handyman Pelvis/Handyman Spine/Handyman Spine1/Handyman Spine2/Handyman R Clavicle/Handyman R UpperArm/Handyman R Forearm/Handyman R Hand/Handyman R Finger4/Handyman R Finger41/Handyman R Finger42
+    m_Weight: 1
+  - m_Path: Armature/Skeleton/Handyman/Handyman Pelvis/Handyman Spine/Handyman Spine1/Handyman Spine2/Handyman R Clavicle/Handyman R UpperArm/Handyman R Forearm/Handyman R Hand/Handyman Right_ThumbProximal
+    m_Weight: 1
+  - m_Path: Armature/Skeleton/Handyman/Handyman Pelvis/Handyman Spine/Handyman Spine1/Handyman Spine2/Handyman R Clavicle/Handyman R UpperArm/Handyman R Forearm/Handyman R Hand/Handyman Right_ThumbProximal/Handyman Right_ThumbIntermediate
+    m_Weight: 1
+  - m_Path: Armature/Skeleton/Handyman/Handyman Pelvis/Handyman Spine/Handyman Spine1/Handyman Spine2/Handyman R Clavicle/Handyman R UpperArm/Handyman R Forearm/Handyman R Hand/Handyman Right_ThumbProximal/Handyman Right_ThumbIntermediate/Handyman Right_ThumbDistal
+    m_Weight: 1
+  - m_Path: Particle View 001
+    m_Weight: 1

@@ -29,6 +29,8 @@ public class DartTrap : NetworkBehaviour
 
         dart.Spawn();
 
+        dart.GetComponent<ItemHitDamage>().Arm(ulong.MaxValue);
+
         Rigidbody rb = dart.GetComponent<Rigidbody>();
 
         if (rb != null)

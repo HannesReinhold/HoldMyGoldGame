@@ -31,6 +31,7 @@ public class NetworkedPlayer : NetworkBehaviour
             NetworkVariableWritePermission.Server
         ); // TODO set to 0
     public int GoldBarCount => itemCount.Value;
+    public int startItems = 0;
 
     public NetworkedPlayerInteraction interaction;
 
@@ -134,6 +135,8 @@ public class NetworkedPlayer : NetworkBehaviour
         if (IsOwner)
         {
             GameManager.Instance.localPlayer = this;
+            GameManager.Instance.ApplyStageToLocalPlayer();
+
             health.OnValueChanged += onOwnHealthChanged;
         }
         
@@ -238,7 +241,7 @@ public class NetworkedPlayer : NetworkBehaviour
         if (health.Value <= 0) return;
         if (Time.time - lastRespawnTime < respawnLockTime) return;
         if (Time.time - lastHitTime < invulnerableTime) return;
-        if (attackerClientId != NoAttacker && attackerClientId != OwnerClientId) return;
+        if (attackerClientId != NoAttacker && attackerClientId == OwnerClientId) return;
 
         lastHitTime = Time.time;
         health.Value = Mathf.Max(0, health.Value - amount);
@@ -368,8 +371,6 @@ public class NetworkedPlayer : NetworkBehaviour
             fastestStepInterval,
             normalizedInput * playerMovement.slowdown
         );
-
-        Debug.Log(playerMovement.slowdown);
 
         footstepTimer -= Time.deltaTime;
 
@@ -551,5 +552,17 @@ public class NetworkedPlayer : NetworkBehaviour
             depositEvent,
             transform.position
         );
+    }
+
+    public void ResetForRound()
+    {
+        if (!IsServer) return;
+
+        lastHitTime = -10f;
+        lastRespawnTime = Time.time;   // Schutz gegen sofortigen Kill im Respawn
+        health.Value = maxHealth;
+        itemCount.Value = startItems;
+
+        RespawnClientRpc(OwnerOnly());   // zurück zum Spawnpunkt
     }
 }

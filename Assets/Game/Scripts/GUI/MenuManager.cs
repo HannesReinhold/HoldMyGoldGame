@@ -33,6 +33,8 @@ public class MenuManager : MonoBehaviour
     private bool connectionAttempted;
     private bool enteredLobby;
 
+    public bool IsPauseMenuOpen => pauseMenu != null && pauseMenu.activeSelf;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -205,9 +207,6 @@ public class MenuManager : MonoBehaviour
 
         CloseMainMenu();
         ShowHud();
-
-        if (GameManager.Instance != null)
-            GameManager.Instance.EnterLobby();
     }
 
     private void OnClientDisconnected(ulong clientId)
@@ -320,7 +319,7 @@ public class MenuManager : MonoBehaviour
 
         ShowHud();
 
-        SetPlayerControlsBlocked(false);
+        SetPlayerControlsBlocked(!GameManager.Instance.ControlsAllowedByStage);
     }
 
     public void DisableMenu()

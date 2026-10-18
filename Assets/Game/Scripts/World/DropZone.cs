@@ -155,4 +155,10 @@ public class DropZone : HighlightableZone
 
         return amount;
     }
+
+    public void ResetStored()
+    {
+        if (!IsServer) return;
+        storedItems.Value = 0;
+    }
 }

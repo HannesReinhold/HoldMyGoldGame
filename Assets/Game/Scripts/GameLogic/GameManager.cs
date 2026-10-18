@@ -7,14 +7,23 @@ using UnityEngine.SceneManagement;
 
 public class GameManager : NetworkBehaviour
 {
+    public static GameManager Instance { get; private set; }
+
     public MenuManager menuManager;
-
-    private InputSystem inputActions;
-
     public NetworkedPlayer localPlayer;
-
     public WorldManager worldManager;
-    
+
+    [Header("Ablauf")]
+    [SerializeField] private int requiredPlayers = 2;   // zum Testen allein auf 1 stellen
+    [SerializeField] public float countdownSeconds = 3f;
+    [SerializeField] public float playSeconds = 300f;
+    [SerializeField] public float resultSeconds = 10f;
+
+    [SerializeField] private bool allowSoloStart = true;   // für Release-Builds abschaltbar
+
+    private bool soloRound;   // nur Server: aktuelle Runde wurde allein gestartet
+    private int RequiredPlayers => soloRound ? 1 : requiredPlayers;
+
     public event Action<GameStage, GameStage> StageChanged;
 
     public NetworkVariable<GameStage> stage = new NetworkVariable<GameStage>(
@@ -22,20 +31,32 @@ public class GameManager : NetworkBehaviour
         NetworkVariableReadPermission.Everyone,
         NetworkVariableWritePermission.Server
     );
-    
-    private GameStage stageBeforePause = GameStage.NONE;
-    
-    [SerializeField] public float countdownSeconds = 3f;
-    [SerializeField] public float playSeconds = 300f; 
-    
-    
-    public NetworkVariable<long> startTime = new NetworkVariable<long>(
+
+    // Serverzeit, zu der die aktuelle Phase endet (-1 = kein Ende)
+    public NetworkVariable<double> stageEndTime = new NetworkVariable<double>(
         -1,
         NetworkVariableReadPermission.Everyone,
         NetworkVariableWritePermission.Server
     );
 
-    public static GameManager Instance { get; private set; }
+    private InputSystem inputActions;
+
+    // Ohne Verbindung immer NONE
+    public GameStage CurrentStage => IsSpawned ? stage.Value : GameStage.NONE;
+
+    // Für HUD und Countdown-Anzeige, auf allen Clients gleich
+    public float TimeRemaining
+    {
+        get
+        {
+            if (!IsSpawned || stageEndTime.Value < 0) return 0f;
+            return (float)Math.Max(0.0, stageEndTime.Value - NetworkManager.ServerTime.Time);
+        }
+    }
+
+    // Im Countdown und im Ergebnis darf sich niemand bewegen
+    public bool ControlsAllowedByStage =>
+        CurrentStage != GameStage.COUNTDOWN && CurrentStage != GameStage.RESULT;
 
     private void Awake()
     {
@@ -51,113 +72,184 @@ public class GameManager : NetworkBehaviour
 
         DontDestroyOnLoad(gameObject);
 
-        // input
         inputActions = new InputSystem();
         inputActions.FPSController.PauseMenu.performed += OnPauseInput;
-        inputActions.Enable();
-        
-        inputActions = new InputSystem();
         inputActions.FPSController.StartGame.performed += OnGameStartInput;
         inputActions.Enable();
     }
-    
-    public override void OnNetworkSpawn()
-    {
-        stage.OnValueChanged += (oldVal, newVal) => StageChanged?.Invoke(oldVal, newVal);
 
-        // if (IsServer)
-        //     stage.Value = GameStage.NONE;
-    }
-
-    public override void OnNetworkDespawn()
+    private void OnDestroy()
     {
-        stage.OnValueChanged = null;
+        if (inputActions == null) return;
+
+        inputActions.FPSController.PauseMenu.performed -= OnPauseInput;
+        inputActions.FPSController.StartGame.performed -= OnGameStartInput;
+        inputActions.Disable();
+        inputActions.Dispose();
+        inputActions = null;
     }
 
     private void Start()
     {
         MenuManager.Instance.OpenMainMenu();
-        SetStage(GameStage.NONE);
         worldManager.Start();
     }
 
-    public void SetStage(GameStage next)
+    public override void OnNetworkSpawn()
     {
-        if (stage.Value == next || !localPlayer.IsHost)
+        stage.OnValueChanged += HandleStageChanged;
+
+        if (IsServer)
+            SetStage(GameStage.JOIN);                    // Host ist in der Lobby
+        else
+            HandleStageChanged(GameStage.NONE, stage.Value);   // Spätbeitritt: aktuellen Stand übernehmen
+    }
+
+    public override void OnNetworkDespawn()
+    {
+        stage.OnValueChanged -= HandleStageChanged;
+        StageChanged?.Invoke(stage.Value, GameStage.NONE);
+    }
+
+    private void HandleStageChanged(GameStage oldStage, GameStage newStage)
+    {
+        Debug.Log($"Stage: {oldStage} -> {newStage}");
+        StageChanged?.Invoke(oldStage, newStage);
+        ApplyStageToLocalPlayer();
+    }
+
+    public void ApplyStageToLocalPlayer()
+    {
+        if (localPlayer != null)
+            localPlayer.SetControlsBlocked(!ControlsAllowedByStage);
+    }
+
+    // ---------- Server-Logik ----------
+
+    private void Update()
+    {
+        worldManager.Update();
+
+        if (!IsServer || !IsSpawned) return;
+
+        double now = NetworkManager.ServerTime.Time;
+        bool enough = ReadyPlayerCount() >= RequiredPlayers;
+
+        switch (stage.Value)
         {
-            return;
+            case GameStage.JOIN:
+                if (enough)
+                    SetStage(GameStage.COUNTDOWN);
+                break;
+
+            case GameStage.COUNTDOWN:
+                if (!enough)
+                    SetStage(GameStage.JOIN);            // jemand ist wieder gegangen
+                else if (now >= stageEndTime.Value)
+                    SetStage(GameStage.PLAY);
+                break;
+
+            case GameStage.PLAY:
+                if (!enough || now >= stageEndTime.Value)
+                    SetStage(GameStage.RESULT);          // Zeit um oder Gegner weg
+                break;
+
+            case GameStage.RESULT:
+                if (now >= stageEndTime.Value)
+                    SetStage(GameStage.JOIN);            // startet automatisch neu, wenn genug Spieler da sind
+                break;
+        }
+    }
+
+    private void SetStage(GameStage next)
+    {
+        if (!IsServer || stage.Value == next) return;
+
+        if (next == GameStage.JOIN)
+            soloRound = false;
+
+        double now = NetworkManager.ServerTime.Time;
+
+        // Zeit zuerst setzen, beide Werte kommen im selben Netzwerk-Tick an
+        switch (next)
+        {
+            case GameStage.COUNTDOWN: stageEndTime.Value = now + countdownSeconds; break;
+            case GameStage.PLAY: stageEndTime.Value = now + playSeconds; break;
+            case GameStage.RESULT: stageEndTime.Value = now + resultSeconds; break;
+            default: stageEndTime.Value = -1; break;
         }
 
-        GameStage old = stage.Value;
         stage.Value = next;
-        StageChanged?.Invoke(old, next);
-        Debug.Log("Stage changed to " + next.ToString());
+
+        if (next == GameStage.COUNTDOWN)
+            ResetPlayersForRound();
     }
-    
-    public void EnterLobby() => SetStage(GameStage.JOIN);
-    
+
+    // Zählt nur Spieler, deren Objekt schon gespawnt ist
+    private int ReadyPlayerCount()
+    {
+        int count = 0;
+        foreach (var client in NetworkManager.ConnectedClientsList)
+            if (client.PlayerObject != null)
+                count++;
+        return count;
+    }
+
+    private void ResetPlayersForRound()
+    {
+        foreach (var client in NetworkManager.ConnectedClientsList)
+        {
+            if (client.PlayerObject != null &&
+                client.PlayerObject.TryGetComponent(out NetworkedPlayer player))
+                player.ResetForRound();
+        }
+    }
+
+    // Manueller Start für den Host (z. B. zum Testen allein)
     public void StartSession()
     {
-        if (stage.Value != GameStage.JOIN)
+        if (!IsServer || stage.Value != GameStage.JOIN) return;
+
+        // Zu wenig Spieler für einen normalen Start: P startet trotzdem, aber nur wenn erlaubt
+        if (ReadyPlayerCount() < requiredPlayers)
         {
-            return;
+            if (!allowSoloStart) return;
+            soloRound = true;
         }
-        
+
         SetStage(GameStage.COUNTDOWN);
     }
 
+    // ---------- Eingaben und Menü ----------
+
+    private void OnGameStartInput(InputAction.CallbackContext context) => StartSession();
+
     private void OnPauseInput(InputAction.CallbackContext context)
     {
-        if (stage.Value == GameStage.PAUSED)
-        {
-            ResumeGame();
-        }
-        else
-        {
-            PauseGame();
-        }
-    }
+        if (CurrentStage == GameStage.NONE) return;
 
-    private void OnGameStartInput(InputAction.CallbackContext context)
-    {
-        StartSession();
+        // Pausemenü ist nur lokal, das Spiel läuft für alle weiter
+        if (MenuManager.Instance.IsPauseMenuOpen) ResumeGame();
+        else PauseGame();
     }
 
     public void PauseGame()
     {
-        if (stage.Value == GameStage.NONE)
-        {
-            return;
-        }
-
+        if (CurrentStage == GameStage.NONE) return;
         MenuManager.Instance.OpenPauseMenu();
     }
 
     public void ResumeGame()
     {
-        Debug.Log("Resume Game");
         MenuManager.Instance.ClosePauseMenu();
-
-        if (stage.Value == GameStage.PAUSED)
-        {
-            SetStage(stageBeforePause);
-        }
     }
-    
+
     public void LeaveGame()
     {
         Debug.Log("Leave Game...");
         ServerDiscoveryManager.Instance.Disconnect();
 
-        SetStage(GameStage.NONE);
         SceneManager.LoadScene("NewNetworkingTEst");
-
         MenuManager.Instance.OpenMainMenu();
     }
-
-    private void Update()
-    {
-        worldManager.Update();
-    }
-    
 }
