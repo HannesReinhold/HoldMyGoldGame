@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.04.00">
+	<object class="AudioFile" id="{57e333c6-c41f-4985-a185-0338ccedd552}">
+		<property name="assetPath">
+			<value>Neue/HoldMyGoldGame - Track 14.wav</value>
+		</property>
+		<property name="frequencyInKHz">
+			<value>48</value>
+		</property>
+		<property name="channelCount">
+			<value>2</value>
+		</property>
+		<property name="length">
+			<value>0.25</value>
+		</property>
+		<property name="embeddedMetadataTagsHash">
+			<value>3456505618</value>
+		</property>
+		<relationship name="masterAssetFolder">
+			<destination>{4e3dad76-6050-45ce-9326-0f7fd03e77d9}</destination>
+		</relationship>
+		<relationship name="metadataTags">
+			<destination>{439cd42a-6e2f-412a-aa97-1c1ae0f880d1}</destination>
+		</relationship>
+	</object>
+	<object class="MetadataTags" id="{439cd42a-6e2f-412a-aa97-1c1ae0f880d1}">
+		<relationship name="loopPoint">
+			<destination>{1af82b99-342a-4751-9e3a-fd54429c7057}</destination>
+		</relationship>
+	</object>
+	<object class="LoopPoint" id="{1af82b99-342a-4751-9e3a-fd54429c7057}">
+		<property name="endSec">
+			<value>0.22914583333333333</value>
+		</property>
+	</object>
+</objects>
