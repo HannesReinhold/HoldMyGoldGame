@@ -1,3 +1,4 @@
+using FMODUnity;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -50,6 +51,53 @@ public class NetworkedPlayer : NetworkBehaviour
     public float scatterForce = 2f;
     public float dropRadius = 0.9f;
 
+
+    // sounds
+    [Header("FMOD Jump Sound")]
+    [SerializeField] private EventReference jumpEvent;
+
+    [Header("FMOD Continuous Walking Sound")]
+    [Tooltip("Looping FMOD event attached to this player.")]
+    [SerializeField] private StudioEventEmitter walkingEmitter;
+
+    [Header("FMOD Footsteps")]
+    [SerializeField] private EventReference footstepEvent;
+
+    [SerializeField, Min(0.05f)]
+    private float fastestStepInterval = 0.22f;
+
+    [SerializeField, Min(0.05f)]
+    private float slowestStepInterval = 0.65f;
+
+    [SerializeField, Range(0f, 1f)]
+    private float movementInputThreshold = 0.1f;
+
+    [SerializeField, Range(0.1f, 1f)]
+    private float fullInputMagnitude = 1f;
+
+    private float footstepTimer;
+
+    // Server-authoritative audio state, replicated to all clients.
+    private readonly NetworkVariable<bool> isWalkingNetworked =
+        new NetworkVariable<bool>(
+            false,
+            NetworkVariableReadPermission.Everyone,
+            NetworkVariableWritePermission.Server
+        );
+
+    private bool localWalkingSoundPlaying;
+
+    private bool controlsBlocked;
+
+
+    [Header("FMOD Throw Sound")]
+    [SerializeField] private FMODUnity.EventReference throwEvent;
+    [Header("FMOD Pickup Sound")]
+    [SerializeField] private FMODUnity.EventReference pickupEvent;
+    [Header("FMOD Deposit Sound")]
+    [SerializeField] private FMODUnity.EventReference depositEvent;
+
+
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
@@ -83,6 +131,13 @@ public class NetworkedPlayer : NetworkBehaviour
 
         if (IsOwner)
             GameManager.Instance.localPlayer = this;
+
+
+        // subscribe to walking
+        isWalkingNetworked.OnValueChanged += OnWalkingStateChanged;
+
+        footstepTimer = 0f;
+        ApplyWalkingSound(isWalkingNetworked.Value);
     }
 
     public override void OnNetworkDespawn()
@@ -95,6 +150,10 @@ public class NetworkedPlayer : NetworkBehaviour
 
         playerSlot.OnValueChanged -= OnSlotChanged;
         base.OnNetworkDespawn();
+
+        //unsubscribe walking
+        isWalkingNetworked.OnValueChanged -= OnWalkingStateChanged;
+        ApplyWalkingSound(false);
     }
 
     public void SetEnablePlayerCamera(bool enabled)
@@ -247,5 +306,236 @@ public class NetworkedPlayer : NetworkBehaviour
     {
         MoveToSpawn(playerSlot.Value);
         playerMovement.ResetMotion();
+    }
+
+
+    // sounds
+    private void Update()
+    {
+        if (!IsSpawned || !IsOwner)
+            return;
+
+        UpdateMovementAudio();
+    }
+
+    private void UpdateMovementAudio()
+    {
+        if (playerMovement == null ||
+            !playerMovement.grounded ||
+            controlsBlocked ||
+            health.Value <= 0)
+        {
+            SetWalkingStateServerRpc(false);
+            footstepTimer = 0f;
+            return;
+        }
+
+        Vector2 input = playerMovement.GetPlayerMovement();
+        float inputMagnitude = Mathf.Clamp01(input.magnitude);
+
+        bool wantsToWalk = inputMagnitude > movementInputThreshold;
+
+        SetWalkingStateServerRpc(wantsToWalk);
+
+        if (!wantsToWalk)
+        {
+            footstepTimer = 0f;
+            return;
+        }
+
+        float normalizedInput = Mathf.InverseLerp(
+            movementInputThreshold,
+            fullInputMagnitude,
+            inputMagnitude
+        );
+
+        float stepInterval = Mathf.Lerp(
+            slowestStepInterval,
+            fastestStepInterval,
+            normalizedInput * playerMovement.slowdown
+        );
+
+        Debug.Log(playerMovement.slowdown);
+
+        footstepTimer -= Time.deltaTime;
+
+        if (footstepTimer <= 0f)
+        {
+            PlayFootstepServerRpc();
+            footstepTimer = stepInterval;
+        }
+    }
+
+    [ServerRpc]
+    private void SetWalkingStateServerRpc(
+    bool walking,
+    ServerRpcParams rpcParams = default)
+    {
+        if (rpcParams.Receive.SenderClientId != OwnerClientId)
+            return;
+
+        if (isWalkingNetworked.Value != walking)
+            isWalkingNetworked.Value = walking;
+    }
+
+    private void OnWalkingStateChanged(bool previous, bool current)
+    {
+        ApplyWalkingSound(current);
+    }
+
+    private void ApplyWalkingSound(bool shouldPlay)
+    {
+        if (walkingEmitter == null)
+            return;
+
+        if (shouldPlay && !localWalkingSoundPlaying)
+        {
+            walkingEmitter.Play();
+            localWalkingSoundPlaying = true;
+        }
+        else if (!shouldPlay && localWalkingSoundPlaying)
+        {
+            walkingEmitter.Stop();
+            localWalkingSoundPlaying = false;
+        }
+    }
+
+    [ServerRpc]
+    private void PlayFootstepServerRpc(
+    ServerRpcParams rpcParams = default)
+    {
+        if (rpcParams.Receive.SenderClientId != OwnerClientId)
+            return;
+
+        PlayFootstepClientRpc();
+    }
+
+    [ClientRpc]
+    private void PlayFootstepClientRpc()
+    {
+        RuntimeManager.PlayOneShot(
+            footstepEvent,
+            transform.position
+        );
+    }
+
+
+    public void PlayJumpSound()
+    {
+        if (!IsOwner || !IsSpawned)
+            return;
+
+        PlayJumpSoundServerRpc();
+    }
+
+    [ServerRpc]
+    private void PlayJumpSoundServerRpc(
+        ServerRpcParams rpcParams = default)
+    {
+        if (rpcParams.Receive.SenderClientId != OwnerClientId)
+            return;
+
+        PlayJumpSoundClientRpc();
+    }
+
+    [ClientRpc]
+    private void PlayJumpSoundClientRpc()
+    {
+        RuntimeManager.PlayOneShot(
+            jumpEvent,
+            transform.position
+        );
+    }
+
+
+    public void PlayThrowSound()
+    {
+        if (!IsOwner || !IsSpawned)
+            return;
+
+        PlayThrowSoundServerRpc();
+    }
+
+    [ServerRpc]
+    private void PlayThrowSoundServerRpc(
+        ServerRpcParams rpcParams = default)
+    {
+        if (rpcParams.Receive.SenderClientId != OwnerClientId)
+            return;
+
+        PlayThrowSoundClientRpc();
+    }
+
+    [ClientRpc]
+    private void PlayThrowSoundClientRpc()
+    {
+        if (throwEvent.IsNull)
+            return;
+
+        FMODUnity.RuntimeManager.PlayOneShot(
+            throwEvent,
+            transform.position
+        );
+    }
+
+
+    public void PlayPickupSound()
+    {
+        if (!IsOwner || !IsSpawned)
+            return;
+
+        PlayPickupSoundServerRpc();
+    }
+
+    [ServerRpc]
+    private void PlayPickupSoundServerRpc(
+        ServerRpcParams rpcParams = default)
+    {
+        if (rpcParams.Receive.SenderClientId != OwnerClientId)
+            return;
+
+        PlayPickupSoundClientRpc();
+    }
+
+    [ClientRpc]
+    private void PlayPickupSoundClientRpc()
+    {
+        if (pickupEvent.IsNull)
+            return;
+
+        FMODUnity.RuntimeManager.PlayOneShot(
+            pickupEvent,
+            transform.position
+        );
+    }
+
+    public void PlayDepositSound()
+    {
+        if (!IsOwner || !IsSpawned)
+            return;
+
+        PlayDepositSoundServerRpc();
+    }
+
+    [ServerRpc]
+    private void PlayDepositSoundServerRpc(
+        ServerRpcParams rpcParams = default)
+    {
+        if (rpcParams.Receive.SenderClientId != OwnerClientId)
+            return;
+
+        PlayDepositSoundClientRpc();
+    }
+
+    [ClientRpc]
+    private void PlayDepositSoundClientRpc()
+    {
+        if (depositEvent.IsNull)
+            return;
+
+        FMODUnity.RuntimeManager.PlayOneShot(
+            depositEvent,
+            transform.position
+        );
     }
 }

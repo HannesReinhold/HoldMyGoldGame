@@ -1,5 +1,68 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &531695186045838143
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3703352731899291279}
+  - component: {fileID: 3895943366990389565}
+  m_Layer: 0
+  m_Name: Wheel Sound
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3703352731899291279
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 531695186045838143}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0.18713, y: 0.679, z: 0.66993}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2165066496292194191}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3895943366990389565
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 531695186045838143}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9a6610d2e704f1648819acc8d7460285, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: FMODUnity::FMODUnity.StudioEventEmitter
+  CollisionTag: 
+  EventReference:
+    Guid:
+      Data1: 845938586
+      Data2: 1202927055
+      Data3: 191383228
+      Data4: 1589939049
+    Path: event:/CartWheel
+  Event: 
+  EventPlayTrigger: 0
+  EventStopTrigger: 0
+  AllowFadeout: 1
+  TriggerOnce: 0
+  Preload: 0
+  NonRigidbodyVelocity: 0
+  Params: []
+  OverrideAttenuation: 0
+  OverrideMinDistance: 1
+  OverrideMaxDistance: 20
 --- !u!1 &2571872415284446001
 GameObject:
   m_ObjectHideFlags: 0
@@ -44,6 +107,7 @@ Transform:
   - {fileID: 3380687213570576884}
   - {fileID: 949799104741543003}
   - {fileID: 815508207310199576}
+  - {fileID: 3703352731899291279}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &5188604172640537723
@@ -197,6 +261,46 @@ MonoBehaviour:
   maxDroppedItems: 100
   scatterForce: 0
   dropRadius: 0.7
+  jumpEvent:
+    Guid:
+      Data1: 1232294614
+      Data2: 1228571912
+      Data3: -559195464
+      Data4: 1883272579
+    Path: event:/Jump
+  walkingEmitter: {fileID: 3895943366990389565}
+  footstepEvent:
+    Guid:
+      Data1: -1805038566
+      Data2: 1105480752
+      Data3: 1467976633
+      Data4: -330628974
+    Path: event:/Footsteps
+  fastestStepInterval: 0.6
+  slowestStepInterval: 1.5
+  movementInputThreshold: 0.1
+  fullInputMagnitude: 1
+  throwEvent:
+    Guid:
+      Data1: 1275055234
+      Data2: 1323708988
+      Data3: 1355313293
+      Data4: 1624827711
+    Path: event:/Throw
+  pickupEvent:
+    Guid:
+      Data1: -1735416686
+      Data2: 1223982612
+      Data3: -717744250
+      Data4: -379116293
+    Path: event:/Pickup
+  depositEvent:
+    Guid:
+      Data1: -501835557
+      Data2: 1074311914
+      Data3: 1050378143
+      Data4: 1429522093
+    Path: event:/DepositGold
 --- !u!114 &6121316786019787671
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -242,9 +346,12 @@ MonoBehaviour:
   knockbackDecelAir: 4
   jumpHeight: 1.5
   wallBlocker: {fileID: 4760379984758195476}
+  velocity: {x: 0, y: 0, z: 0}
   gravity: -9.81
+  grounded: 0
   movementEnabled: 0
   playerEnabled: 1
+  slowdown: 1
   maxLookUp: 90
   maxLookDownFree: 90
   maxLookDownBlocked: 30
@@ -579,7 +686,7 @@ AudioListener:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7550254050635311613}
-  m_Enabled: 1
+  m_Enabled: 0
 --- !u!114 &8422341223160609052
 MonoBehaviour:
   m_ObjectHideFlags: 0

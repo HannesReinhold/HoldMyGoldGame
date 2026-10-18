@@ -172,6 +172,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PickableItem
   ShowTopMostFoldoutHeaderGroup: 1
+  impactEvent:
+    Guid:
+      Data1: -31497649
+      Data2: 1103573726
+      Data3: 1528233916
+      Data4: 1401352669
+    Path: event:/GoldHitGround
+  groundLayers:
+    serializedVersion: 2
+    m_Bits: 512
+  minimumImpactSpeed: 0.5
 --- !u!114 &7334575401881418484
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -1,5 +1,59 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-8756893639921204618
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ceb653cd98e289a4e8697a1af55201f2, type: 3}
+  m_Name: event:/DepositGold
+  m_EditorClassIdentifier: FMODUnityEditor::FMODUnity.EditorEventRef
+  Path: event:/DepositGold
+  Guid:
+    Data1: -501835557
+    Data2: 1074311914
+    Data3: 1050378143
+    Data4: 1429522093
+  Banks:
+  - {fileID: 2569187851134197312}
+  IsStream: 0
+  Is3D: 1
+  IsOneShot: 1
+  Parameters: []
+  MinDistance: 1
+  MaxDistance: 20
+  Length: 1296
+--- !u!114 &-7801707288967128955
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ceb653cd98e289a4e8697a1af55201f2, type: 3}
+  m_Name: event:/CartWheel
+  m_EditorClassIdentifier: FMODUnityEditor::FMODUnity.EditorEventRef
+  Path: event:/CartWheel
+  Guid:
+    Data1: 845938586
+    Data2: 1202927055
+    Data3: 191383228
+    Data4: 1589939049
+  Banks:
+  - {fileID: 2569187851134197312}
+  IsStream: 0
+  Is3D: 1
+  IsOneShot: 0
+  Parameters: []
+  MinDistance: 1
+  MaxDistance: 20
+  Length: 25000
 --- !u!114 &-4390019300053124628
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -27,6 +81,87 @@ MonoBehaviour:
   MinDistance: 1
   MaxDistance: 20
   Length: 25176
+--- !u!114 &-3126205804208013657
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ceb653cd98e289a4e8697a1af55201f2, type: 3}
+  m_Name: event:/Footsteps
+  m_EditorClassIdentifier: FMODUnityEditor::FMODUnity.EditorEventRef
+  Path: event:/Footsteps
+  Guid:
+    Data1: -1805038566
+    Data2: 1105480752
+    Data3: 1467976633
+    Data4: -330628974
+  Banks:
+  - {fileID: 2569187851134197312}
+  IsStream: 0
+  Is3D: 1
+  IsOneShot: 1
+  Parameters: []
+  MinDistance: 1
+  MaxDistance: 20
+  Length: 0
+--- !u!114 &-3024749013187255030
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ceb653cd98e289a4e8697a1af55201f2, type: 3}
+  m_Name: event:/Jump
+  m_EditorClassIdentifier: FMODUnityEditor::FMODUnity.EditorEventRef
+  Path: event:/Jump
+  Guid:
+    Data1: 1232294614
+    Data2: 1228571912
+    Data3: -559195464
+    Data4: 1883272579
+  Banks:
+  - {fileID: 2569187851134197312}
+  IsStream: 0
+  Is3D: 1
+  IsOneShot: 1
+  Parameters: []
+  MinDistance: 1
+  MaxDistance: 20
+  Length: 0
+--- !u!114 &-2150640131176068569
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ceb653cd98e289a4e8697a1af55201f2, type: 3}
+  m_Name: event:/GoldHitGround
+  m_EditorClassIdentifier: FMODUnityEditor::FMODUnity.EditorEventRef
+  Path: event:/GoldHitGround
+  Guid:
+    Data1: -31497649
+    Data2: 1103573726
+    Data3: 1528233916
+    Data4: 1401352669
+  Banks:
+  - {fileID: 2569187851134197312}
+  IsStream: 0
+  Is3D: 1
+  IsOneShot: 1
+  Parameters: []
+  MinDistance: 1
+  MaxDistance: 20
+  Length: 0
 --- !u!114 &-2037107448056762161
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -42,10 +177,10 @@ MonoBehaviour:
   Path: HodMyGoldAudioProject/Build/Desktop/Master.strings.bank
   Name: Master.strings
   StudioPath: bank:/Master.strings
-  lastModified: 639279025197925894
+  lastModified: 639279101589788372
   FileSizes:
   - Name: Desktop
-    Value: 778
+    Value: 1108
   Exists: 1
 --- !u!114 &11400000
 MonoBehaviour:
@@ -64,16 +199,40 @@ MonoBehaviour:
   - {fileID: 2569187851134197312}
   EditorEvents:
   - {fileID: -4390019300053124628}
+  - {fileID: 7535978259200679349}
+  - {fileID: -3126205804208013657}
+  - {fileID: -3024749013187255030}
+  - {fileID: -7801707288967128955}
+  - {fileID: -2150640131176068569}
+  - {fileID: 6023120084699008516}
+  - {fileID: 3631321531590529101}
+  - {fileID: -8756893639921204618}
   EditorParameters: []
   MasterBanks:
   - {fileID: 2569187851134197312}
   StringsBanks:
   - {fileID: -2037107448056762161}
   cacheVersion: 132096
-  cacheTime: 639279025197925894
+  cacheTime: 639279101589788372
   SerializableEventsDict:
   - key: event:/Among
     index: 0
+  - key: event:/Among 2
+    index: 1
+  - key: event:/Footsteps
+    index: 2
+  - key: event:/Jump
+    index: 3
+  - key: event:/CartWheel
+    index: 4
+  - key: event:/GoldHitGround
+    index: 5
+  - key: event:/Throw
+    index: 6
+  - key: event:/Pickup
+    index: 7
+  - key: event:/DepositGold
+    index: 8
 --- !u!114 &2569187851134197312
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -89,8 +248,89 @@ MonoBehaviour:
   Path: HodMyGoldAudioProject/Build/Desktop/Master.bank
   Name: Master
   StudioPath: bank:/Master
-  lastModified: 639279025197900889
+  lastModified: 639279101589763372
   FileSizes:
   - Name: Desktop
-    Value: 197280
+    Value: 910848
   Exists: 1
+--- !u!114 &3631321531590529101
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ceb653cd98e289a4e8697a1af55201f2, type: 3}
+  m_Name: event:/Pickup
+  m_EditorClassIdentifier: FMODUnityEditor::FMODUnity.EditorEventRef
+  Path: event:/Pickup
+  Guid:
+    Data1: -1735416686
+    Data2: 1223982612
+    Data3: -717744250
+    Data4: -379116293
+  Banks:
+  - {fileID: 2569187851134197312}
+  IsStream: 0
+  Is3D: 1
+  IsOneShot: 1
+  Parameters: []
+  MinDistance: 1
+  MaxDistance: 20
+  Length: 220
+--- !u!114 &6023120084699008516
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ceb653cd98e289a4e8697a1af55201f2, type: 3}
+  m_Name: event:/Throw
+  m_EditorClassIdentifier: FMODUnityEditor::FMODUnity.EditorEventRef
+  Path: event:/Throw
+  Guid:
+    Data1: 1275055234
+    Data2: 1323708988
+    Data3: 1355313293
+    Data4: 1624827711
+  Banks:
+  - {fileID: 2569187851134197312}
+  IsStream: 0
+  Is3D: 1
+  IsOneShot: 1
+  Parameters: []
+  MinDistance: 1
+  MaxDistance: 20
+  Length: 0
+--- !u!114 &7535978259200679349
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ceb653cd98e289a4e8697a1af55201f2, type: 3}
+  m_Name: event:/Among 2
+  m_EditorClassIdentifier: FMODUnityEditor::FMODUnity.EditorEventRef
+  Path: event:/Among 2
+  Guid:
+    Data1: -707862195
+    Data2: 1184478543
+    Data3: -2066615644
+    Data4: 1645536738
+  Banks:
+  - {fileID: 2569187851134197312}
+  IsStream: 1
+  Is3D: 1
+  IsOneShot: 0
+  Parameters: []
+  MinDistance: 1
+  MaxDistance: 20
+  Length: 25176

@@ -27,9 +27,9 @@ public class PlayerMovement : MonoBehaviour
     private float xRotation = 0f;
 
     // Movement Vars
-    private Vector3 velocity;
+    public Vector3 velocity;
     public float gravity = -9.81f;
-    private bool grounded;
+    public bool grounded;
 
     public bool movementEnabled;
     public bool playerEnabled;
@@ -37,6 +37,8 @@ public class PlayerMovement : MonoBehaviour
     private bool inputBlocked;
 
     public float Pitch => xRotation;
+
+    public float slowdown = 1;
 
     public void SetInputBlocked(bool blocked)
     {
@@ -111,12 +113,14 @@ public class PlayerMovement : MonoBehaviour
         {
             float processedJumpHeight = slowdownCurve.Evaluate(t) * jumpHeight;
             velocity.y = Mathf.Sqrt(-2f * gravity * processedJumpHeight);
+            networkedPlayer.PlayJumpSound();
         }
 
         velocity.y += gravity * Time.deltaTime;
 
 
         float processedMovementSpeed = slowdownCurve.Evaluate(t)*movementSpeed;
+        slowdown = slowdownCurve.Evaluate(t);
         Vector3 move = (transform.right * input.x + transform.forward * input.y) * processedMovementSpeed;
 
         // Ein einziger Move: Laufen + Knockback + Vertikal

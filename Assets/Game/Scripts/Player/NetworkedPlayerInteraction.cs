@@ -157,6 +157,7 @@ public class NetworkedPlayerInteraction : NetworkBehaviour
             {
                 Debug.Log("Pickup Item");
                 PickupItemServerRpc(item.NetworkObject.NetworkObjectId);
+                networkedPlayer.PlayPickupSound();
                 return;
             }
         }
@@ -172,6 +173,7 @@ public class NetworkedPlayerInteraction : NetworkBehaviour
         if (aimedZone is DropZone zone)
         {
             DepositToDropZoneServerRpc(zone.NetworkObject);
+            networkedPlayer.PlayDepositSound();
             return;
         }
 
@@ -194,6 +196,7 @@ public class NetworkedPlayerInteraction : NetworkBehaviour
         if (!IsOwner || networkedPlayer.GoldBarCount <= 0) return;
 
         DropItemServerRpc(playerCamera.transform.forward, charge);
+        networkedPlayer.PlayThrowSound();
     }
 
     private HighlightableZone GetAimedZone()
@@ -303,6 +306,7 @@ public class NetworkedPlayerInteraction : NetworkBehaviour
         int amount = location.TryTake();
         if (amount > 0)
             networkedPlayer.itemCount.Value += amount;
+        networkedPlayer.PlayPickupSound();
     }
 
     [ServerRpc]
