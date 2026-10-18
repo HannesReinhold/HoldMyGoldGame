@@ -154,8 +154,8 @@ public class MenuManager : MonoBehaviour
 
         SetStatus("Creating Relay session...");
 
-        if (joinCodeDisplayText != null)
-            joinCodeDisplayText.text = "Creating join code...";
+        /*if (joinCodeDisplayText != null)
+            joinCodeDisplayText.text = "Creating join code...";*/
 
         relayManager.Host();
     }
@@ -167,7 +167,7 @@ public class MenuManager : MonoBehaviour
     }
 
     // Retained name so an existing button can keep its OnClick binding.
-    public void OnJoinFoundGamePressed()
+    public async void OnJoinFoundGamePressed()
     {
         if (relayManager == null)
         {
@@ -194,14 +194,19 @@ public class MenuManager : MonoBehaviour
 
         SetStatus("Joining Relay session...");
 
-        relayManager.Join(joinCode);
+        bool success = await relayManager.Join(joinCode);
+
+        if (!success)
+        {
+            SetStatus("Invalid Join-Code or Connection failed.");
+        }
     }
 
     // Called by RelayHostJoinManager when the host's join code is ready.
     public void OnRelayJoinCodeReady(string joinCode)
     {
-        if (joinCodeDisplayText != null)
-            joinCodeDisplayText.text = "Join code: " + joinCode;
+        /*if (joinCodeDisplayText != null)
+            joinCodeDisplayText.text = "Join code: " + joinCode;*/
 
         SetStatus("Relay created. Share the join code with the other player.");
     }

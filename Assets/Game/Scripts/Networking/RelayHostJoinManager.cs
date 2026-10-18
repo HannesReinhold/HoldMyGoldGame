@@ -93,26 +93,26 @@ public class RelayHostJoinManager : MonoBehaviour
         }
     }
 
-    public async void Join(string joinCode)
+    public async Task<bool> Join(string joinCode)
     {
         try
         {
             if (networkManager == null || transport == null)
             {
                 Debug.LogError("NetworkManager or UnityTransport missing.");
-                return;
+                return false;
             }
 
             if (networkManager.IsListening)
             {
                 Debug.LogWarning("NetworkManager is already running.");
-                return;
+                return false;
             }
 
             if (string.IsNullOrWhiteSpace(joinCode))
             {
                 Debug.LogError("Enter a Relay join code.");
-                return;
+                return false;
             }
 
             await InitializeServices();
@@ -124,17 +124,25 @@ public class RelayHostJoinManager : MonoBehaviour
             transport.UseWebSockets = true;
 
             transport.SetRelayServerData(
-                AllocationUtils.ToRelayServerData(
-                    allocation, "wss"));
+                AllocationUtils.ToRelayServerData(allocation, "wss"));
 
             if (!networkManager.StartClient())
             {
                 Debug.LogError("NGO failed to start the client.");
+                return false;
             }
+
+            return true;
+        }
+        catch (RelayServiceException e)
+        {
+            Debug.LogWarning($"Relay join failed: {e.Message}");
+            return false;
         }
         catch (Exception e)
         {
             Debug.LogException(e);
+            return false;
         }
     }
 }
