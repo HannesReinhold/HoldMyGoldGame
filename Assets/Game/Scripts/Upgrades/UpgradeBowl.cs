@@ -151,7 +151,7 @@ public class UpgradeBowl : NetworkBehaviour
         ItemHitDamage item =
             other.GetComponentInParent<ItemHitDamage>();
 
-        if (item == null || !item.armed)
+        if (item == null)
             return;
 
         ulong throwerId = item.throwerClientId;
