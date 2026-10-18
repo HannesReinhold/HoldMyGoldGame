@@ -4,35 +4,52 @@ using UnityEngine;
 public class ItemHitDamage : NetworkBehaviour
 {
     public int damage = 1;
-    public float knockbackForce = 8f;
-    public float upwardBoost = 0.4f;     // Anteil von knockbackForce nach oben
-    public float minImpactSpeed = 3f;    // liegende/rollende Items machen keinen Schaden
-    public float ignoreAfterSpawn = 0.1f; // Wurf trifft nicht sofort den Werfer
+    public float knockbackForce = 8f;     // Knockback bei voller Aufprallgeschwindigkeit
+    public float upwardBoost = 0.4f;
+    public float minImpactSpeed = 3f;
 
-    private float spawnTime;
+    [Header("Skalierung")]
+    public float fullKnockbackSpeed = 10f;   // ab dieser Aufprallgeschwindigkeit voller Knockback (z. B. throwForce)
+    public float minKnockbackScale = 0.3f;   // untere Grenze, damit schwache Treffer nicht wirkungslos sind
 
-    public override void OnNetworkSpawn()
+    [Header("Werfer")]
+    public float selfImmuneTime = 1f;        // so lange kann der Werfer sein eigenes Item nicht abbekommen
+
+    // Nur Server. Ohne Arm() macht das Item nie Schaden (Drop, Todes-Drop, liegende Items).
+    private bool armed;
+    private ulong throwerClientId = NetworkedPlayer.NoAttacker;
+    private float armTime;
+
+    public void Arm(ulong thrower)
     {
-        spawnTime = Time.time;
+        armed = true;
+        throwerClientId = thrower;
+        armTime = Time.time;
     }
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (!IsServer || !IsSpawned) return;
-        if (Time.time - spawnTime < ignoreAfterSpawn) return;
-        if (collision.relativeVelocity.magnitude < minImpactSpeed) return;
+        if (!IsServer || !IsSpawned || !armed) return;
+
+        float speed = collision.relativeVelocity.magnitude;
+        if (speed < minImpactSpeed) return;
 
         var player = collision.collider.GetComponentInParent<NetworkedPlayer>();
         if (player == null) return;
+
+        if (player.OwnerClientId == throwerClientId && Time.time - armTime < selfImmuneTime)
+            return;
 
         Vector3 dir = player.transform.position - transform.position;
         dir.y = 0f;
         dir = dir.sqrMagnitude > 0.001f ? dir.normalized : transform.forward;
 
-        Vector3 impulse = dir * knockbackForce + Vector3.up * (knockbackForce * upwardBoost);
-        player.itemCount.Value += 1;
-        player.TakeDamage(damage, impulse);
+        float scale = Mathf.Clamp(speed / fullKnockbackSpeed, minKnockbackScale, 1f);
+        Vector3 impulse = (dir * knockbackForce + Vector3.up * (knockbackForce * upwardBoost)) * scale;
 
-        NetworkObject.Despawn(true); // TODO dont despawn with no damage dealt
+        player.itemCount.Value += 1;
+        player.TakeDamage(damage, impulse, throwerClientId);
+
+        NetworkObject.Despawn(true);
     }
 }

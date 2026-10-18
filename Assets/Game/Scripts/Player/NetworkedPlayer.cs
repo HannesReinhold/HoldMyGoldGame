@@ -51,6 +51,7 @@ public class NetworkedPlayer : NetworkBehaviour
     public float scatterForce = 2f;
     public float dropRadius = 0.9f;
 
+    public const ulong NoAttacker = ulong.MaxValue;
 
     // sounds
     [Header("FMOD Jump Sound")]
@@ -219,12 +220,13 @@ public class NetworkedPlayer : NetworkBehaviour
         playerMovement.ResetLook();
     }
 
-    public void TakeDamage(int amount, Vector3 knockbackImpulse)
+    public void TakeDamage(int amount, Vector3 knockbackImpulse, ulong attackerClientId = NoAttacker)
     {
         if (!IsServer) return;
         if (health.Value <= 0) return;
         if (Time.time - lastRespawnTime < respawnLockTime) return;
         if (Time.time - lastHitTime < invulnerableTime) return;
+        if (attackerClientId != NoAttacker && attackerClientId != OwnerClientId) return;
 
         lastHitTime = Time.time;
         health.Value = Mathf.Max(0, health.Value - amount);
