@@ -1,6 +1,7 @@
 using System;
 using Game.Scripts.GameLogic;
 using TMPro;
+using Unity.Netcode;
 using UnityEngine;
 
 public class HudManager : MonoBehaviour
@@ -9,6 +10,7 @@ public class HudManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI Health;
     [SerializeField] private TextMeshProUGUI CountDown;
     [SerializeField] private TextMeshProUGUI Stage;
+    [SerializeField] private TextMeshProUGUI JoinCodeText;
 
     [SerializeField] private float timeWarningStart = 30f;
     [SerializeField] private float timeWarningFullAt = 25f;
@@ -37,6 +39,8 @@ public class HudManager : MonoBehaviour
             Stage.enabled = false;
             Health.enabled = false;
         }
+
+        JoinCodeText.enabled = false;;
     }
 
     private void OnEnable()
@@ -86,6 +90,16 @@ public class HudManager : MonoBehaviour
             case GameStage.COUNTDOWN:
                 CountDown.text = Mathf.CeilToInt(gm.TimeRemaining).ToString();
                 break;
+            
+            case GameStage.JOIN:
+                bool showCode = NetworkManager.Singleton != null
+                                && NetworkManager.Singleton.IsHost
+                                && !string.IsNullOrEmpty(MenuManager.Instance.joinCode);
+                JoinCodeText.enabled = showCode;
+                if (showCode)
+                    JoinCodeText.text = "Join code: " + MenuManager.Instance.joinCode;
+
+                break;
         }
 
         if (playerData == null)
@@ -103,6 +117,9 @@ public class HudManager : MonoBehaviour
 
         if (old == GameStage.PLAY)
             ResetTimerWarning();
+
+        if (next != GameStage.JOIN)
+            JoinCodeText.enabled = false;
     }
 
     private void ApplyTimerWarning(float timeLeft)

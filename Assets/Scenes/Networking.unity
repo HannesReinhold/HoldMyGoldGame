@@ -29784,6 +29784,10 @@ PrefabInstance:
       propertyPath: m_Sprite
       value: 
       objectReference: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
+    - target: {fileID: 5880703268530713519, guid: 73825f3a5a7f0a34eb093836480ada21, type: 3}
+      propertyPath: JoinCodeText
+      value: 
+      objectReference: {fileID: 1359512855}
     - target: {fileID: 6116059177587326433, guid: 73825f3a5a7f0a34eb093836480ada21, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0

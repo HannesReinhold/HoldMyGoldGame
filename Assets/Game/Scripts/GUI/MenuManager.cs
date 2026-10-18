@@ -36,6 +36,8 @@ public class MenuManager : MonoBehaviour
     private bool connectionAttempted;
     private bool enteredLobby;
 
+    public string joinCode;
+
     public bool IsPauseMenuOpen => pauseMenu != null && pauseMenu.activeSelf;
 
     private bool MenuCamOverride = false;
@@ -207,6 +209,8 @@ public class MenuManager : MonoBehaviour
     {
         /*if (joinCodeDisplayText != null)
             joinCodeDisplayText.text = "Join code: " + joinCode;*/
+
+        this.joinCode = joinCode;
 
         SetStatus("Relay created. Share the join code with the other player.");
     }
