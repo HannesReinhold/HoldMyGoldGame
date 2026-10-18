@@ -106,7 +106,7 @@ public class PlayerMovement : MonoBehaviour
             velocity.y = -2f;
 
         Vector2 input = inputBlocked ? Vector2.zero : GetPlayerMovement();
-        float t = Mathf.Clamp01((float)networkedPlayer.GoldBarCount / maxItemsForSlowdown);
+        float t = Mathf.Clamp01((float)(networkedPlayer.GoldBarCount / maxItemsForSlowdown)/playerUpgradeStats.WidthMultiplier);
 
         // Springen (Taste gehalten = automatisch weiter springen)
         bool jumpHeld = !inputBlocked && inputActions.FPSController.Jump.IsPressed();
@@ -135,7 +135,7 @@ public class PlayerMovement : MonoBehaviour
 
     public void AddKnockback(Vector3 impulse)
     {
-        float t = Mathf.Clamp01((float)networkedPlayer.GoldBarCount / maxItemsForSlowdown);
+        float t = Mathf.Clamp01((float)(networkedPlayer.GoldBarCount / maxItemsForSlowdown)/ playerUpgradeStats.WidthMultiplier);
         float factor = slowdownCurve.Evaluate(t);
         impulse *= factor;
         knockback = new Vector3(impulse.x, 0f, impulse.z);

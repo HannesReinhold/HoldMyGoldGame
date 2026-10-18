@@ -78,7 +78,7 @@ public class PickupLocation : HighlightableZone
     }
 
     // Nur auf dem Server aufrufen. Gibt die Anzahl zurück, die der Spieler bekommt.
-    public int TryTake()
+    public int TryTake(PlayerUpgradeStats playerUpgradeStats)
     {
         if (!IsServer) return 0;
         if (Time.time < nextAvailableTime) return 0;
@@ -86,7 +86,7 @@ public class PickupLocation : HighlightableZone
         int taken = Mathf.Min(Mathf.Max(0, amountPerPickup), syncedNumBars.Value);
         if (taken <= 0) return 0;
 
-        nextAvailableTime = Time.time + cooldown;
+        nextAvailableTime = Time.time + (cooldown/playerUpgradeStats.PickupSpeedMultiplier);
 
         syncedNumBars.Value -= taken;
         numBars = syncedNumBars.Value;

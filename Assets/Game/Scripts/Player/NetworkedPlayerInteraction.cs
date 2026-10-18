@@ -350,7 +350,7 @@ public class NetworkedPlayerInteraction : NetworkBehaviour
         if (Vector3.Distance(transform.position, closest) > highlightRange + 1f)
             return;
 
-        int amount = location.TryTake();
+        int amount = location.TryTake(playerUpgradeStats);
         if (amount > 0)
             networkedPlayer.itemCount.Value += amount;
         networkedPlayer.PlayPickupSound();
