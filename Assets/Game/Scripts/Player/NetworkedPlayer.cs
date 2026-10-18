@@ -562,6 +562,7 @@ public class NetworkedPlayer : NetworkBehaviour
         lastRespawnTime = Time.time;   // Schutz gegen sofortigen Kill im Respawn
         health.Value = maxHealth;
         itemCount.Value = startItems;
+        timesDied = 0;
 
         RespawnClientRpc(OwnerOnly());   // zurück zum Spawnpunkt
     }
