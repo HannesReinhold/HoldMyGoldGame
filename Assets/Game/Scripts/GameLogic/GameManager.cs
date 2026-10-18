@@ -1,5 +1,6 @@
 using System;
 using Game.Scripts.GameLogic;
+using TMPro;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -17,9 +18,8 @@ public class GameManager : NetworkBehaviour
     [SerializeField] private int requiredPlayers = 2;   // zum Testen allein auf 1 stellen
     [SerializeField] public float countdownSeconds = 3f;
     [SerializeField] public float playSeconds = 300f;
-    [SerializeField] public float resultSeconds = 10f;
 
-    [SerializeField] private bool allowSoloStart = true;   // für Release-Builds abschaltbar
+    [SerializeField] private bool allowSoloStart = true;   // fï¿½r Release-Builds abschaltbar
 
     [Header("Runden-Reset")]
     [SerializeField] private string gameplaySceneName = "Gameplay";
@@ -49,7 +49,7 @@ public class GameManager : NetworkBehaviour
     // Ohne Verbindung immer NONE
     public GameStage CurrentStage => IsSpawned ? stage.Value : GameStage.NONE;
 
-    // Für HUD und Countdown-Anzeige, auf allen Clients gleich
+    // Fï¿½r HUD und Countdown-Anzeige, auf allen Clients gleich
     public float TimeRemaining
     {
         get
@@ -111,7 +111,7 @@ public class GameManager : NetworkBehaviour
             SetStage(GameStage.JOIN);                    // Host ist in der Lobby
         }
         else
-            HandleStageChanged(GameStage.NONE, stage.Value);   // Spätbeitritt: aktuellen Stand übernehmen
+            HandleStageChanged(GameStage.NONE, stage.Value);   // Spï¿½tbeitritt: aktuellen Stand ï¿½bernehmen
     }
 
     public override void OnNetworkDespawn()
@@ -170,13 +170,7 @@ public class GameManager : NetworkBehaviour
                 if (!enough || now >= stageEndTime.Value)
                     SetStage(GameStage.RESULT);          // Zeit um oder Gegner weg
                 break;
-
-            case GameStage.RESULT:
-                if (!roundResetInProgress && now >= stageEndTime.Value)
-                {
-                    BeginRoundReset();
-                }
-                break;
+            
         }
     }
 
@@ -194,7 +188,7 @@ public class GameManager : NetworkBehaviour
         {
             case GameStage.COUNTDOWN: stageEndTime.Value = now + countdownSeconds; break;
             case GameStage.PLAY: stageEndTime.Value = now + playSeconds; break;
-            case GameStage.RESULT: stageEndTime.Value = now + resultSeconds; break;
+            case GameStage.RESULT: stageEndTime.Value = -1; break;
             default: stageEndTime.Value = -1; break;
         }
 
@@ -204,7 +198,7 @@ public class GameManager : NetworkBehaviour
             ResetPlayersForRound();
     }
 
-    // Zählt nur Spieler, deren Objekt schon gespawnt ist
+    // Zï¿½hlt nur Spieler, deren Objekt schon gespawnt ist
     private int ReadyPlayerCount()
     {
         int count = 0;
@@ -212,6 +206,14 @@ public class GameManager : NetworkBehaviour
             if (client.PlayerObject != null)
                 count++;
         return count;
+    }
+
+    public void PlayAgain()
+    {
+        if (!IsServer || stage.Value != GameStage.RESULT) return;
+
+        // SetStage(GameStage.JOIN);
+        BeginRoundReset();  
     }
 
     private void ResetPlayersForRound()
@@ -224,12 +226,12 @@ public class GameManager : NetworkBehaviour
         }
     }
 
-    // Manueller Start für den Host (z. B. zum Testen allein)
+    // Manueller Start fï¿½r den Host (z. B. zum Testen allein)
     public void StartSession()
     {
         if (!IsServer || stage.Value != GameStage.JOIN) return;
 
-        // Zu wenig Spieler für einen normalen Start: P startet trotzdem, aber nur wenn erlaubt
+        // Zu wenig Spieler fï¿½r einen normalen Start: P startet trotzdem, aber nur wenn erlaubt
         if (ReadyPlayerCount() < requiredPlayers)
         {
             if (!allowSoloStart) return;
@@ -239,7 +241,7 @@ public class GameManager : NetworkBehaviour
         SetStage(GameStage.COUNTDOWN);
     }
 
-    // ---------- Eingaben und Menü ----------
+    // ---------- Eingaben und Menï¿½ ----------
 
     private void OnGameStartInput(InputAction.CallbackContext context) => StartSession();
 
@@ -247,7 +249,7 @@ public class GameManager : NetworkBehaviour
     {
         if (CurrentStage == GameStage.NONE) return;
 
-        // Pausemenü ist nur lokal, das Spiel läuft für alle weiter
+        // Pausemenï¿½ ist nur lokal, das Spiel lï¿½uft fï¿½r alle weiter
         if (MenuManager.Instance.IsPauseMenuOpen) ResumeGame();
         else PauseGame();
     }
@@ -279,12 +281,12 @@ public class GameManager : NetworkBehaviour
 
         roundResetInProgress = true;
 
-        // Während des Ladens darf kein Countdown beginnen.
+        // Wï¿½hrend des Ladens darf kein Countdown beginnen.
         stageEndTime.Value = -1;
 
         if (NetworkManager.SceneManager == null)
         {
-            Debug.LogError("NetworkSceneManager ist nicht verfügbar.");
+            Debug.LogError("NetworkSceneManager ist nicht verfï¿½gbar.");
             roundResetInProgress = false;
             return;
         }
@@ -325,7 +327,7 @@ public class GameManager : NetworkBehaviour
             );
         }
 
-        // Alle Spieler, deren PlayerObject noch existiert, zurücksetzen.
+        // Alle Spieler, deren PlayerObject noch existiert, zurï¿½cksetzen.
         ResetPlayersForRound();
 
         roundResetInProgress = false;
@@ -354,7 +356,7 @@ public class GameManager : NetworkBehaviour
                 break;
 
             default:
-                // NONE: Menüverhalten nach deinem Hauptmenü-Konzept
+                // NONE: Menï¿½verhalten nach deinem Hauptmenï¿½-Konzept
                 break;
         }
     }

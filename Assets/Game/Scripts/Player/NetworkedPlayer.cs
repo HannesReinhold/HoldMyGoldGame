@@ -1,10 +1,13 @@
 using FMODUnity;
+using Game.Scripts.GameLogic;
+using TMPro;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
 
 public class NetworkedPlayer : NetworkBehaviour
 {
+    
     public Camera playerCamera;
     public AudioListener playerAudioListener;
     public PlayerMovement playerMovement;
@@ -91,6 +94,7 @@ public class NetworkedPlayer : NetworkBehaviour
     private bool localWalkingSoundPlaying;
 
     private bool controlsBlocked;
+    private int hintNumber = 0;
 
 
     [Header("FMOD Throw Sound")]
@@ -138,6 +142,10 @@ public class NetworkedPlayer : NetworkBehaviour
             GameManager.Instance.ApplyStageToLocalPlayer();
 
             health.OnValueChanged += onOwnHealthChanged;
+            MenuManager.Instance.Hint.enabled = false;
+            if (GameManager.Instance != null)
+                GameManager.Instance.StageChanged += OnStageChanged;
+            itemCount.OnValueChanged += OnOwnItemCountChanged;
         }
         
         // subscribe to walking
@@ -156,12 +164,31 @@ public class NetworkedPlayer : NetworkBehaviour
         }
     }
 
+    private void OnStageChanged(GameStage oldStage, GameStage newStage)
+    {
+        if (newStage == GameStage.PLAY && oldStage == GameStage.COUNTDOWN)
+        {
+            MenuManager.Instance.Hint.enabled = true;
+            hintNumber = 1;
+            MenuManager.Instance.Hint.text = "! Pickup gold using 'E' (take)";
+        } else if (newStage == GameStage.JOIN || newStage == GameStage.NONE)
+        {
+            MenuManager.Instance.Hint.enabled = false;
+            hintNumber = 0;
+        } 
+    }
+
     public override void OnNetworkDespawn()
     {
         if (IsOwner)
         {
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
+            MenuManager.Instance.Hint.enabled = false;
+            hintNumber = 0;
+            if (GameManager.Instance != null)
+                GameManager.Instance.StageChanged -= OnStageChanged;
+            itemCount.OnValueChanged -= OnOwnItemCountChanged;
         }
 
         playerSlot.OnValueChanged -= OnSlotChanged;
@@ -170,6 +197,17 @@ public class NetworkedPlayer : NetworkBehaviour
         //unsubscribe walking
         isWalkingNetworked.OnValueChanged -= OnWalkingStateChanged;
         ApplyWalkingSound(false);
+    }
+    
+    private void OnOwnItemCountChanged(int previous, int current)
+    {
+        if (hintNumber != 1) return;
+
+        if (current > previous && current > 0)
+        {
+            hintNumber = 2;
+            MenuManager.Instance.Hint.text = "! Deposit gold at your spawn using 'Q' (drop)";
+        }
     }
 
     public void SetEnablePlayerCamera(bool enabled)
@@ -331,6 +369,10 @@ public class NetworkedPlayer : NetworkBehaviour
     {
         if (!IsSpawned || !IsOwner)
             return;
+        
+        // if (IsServer && Time.time - lastHitTime >= 3f)
+        //     TakeDamage(1, Vector3.zero);
+
 
         UpdateMovementAudio();
     }
@@ -526,6 +568,12 @@ public class NetworkedPlayer : NetworkBehaviour
 
     public void PlayDepositSound()
     {
+        if (hintNumber == 2)
+        {
+            hintNumber = 0;
+            MenuManager.Instance.Hint.enabled = false;
+        }
+        
         if (!IsOwner || !IsSpawned)
             return;
 

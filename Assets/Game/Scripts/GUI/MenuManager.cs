@@ -7,6 +7,8 @@ using TMPro;
 public class MenuManager : MonoBehaviour
 {
     
+    public TextMeshProUGUI Hint;
+    
     [Header("Menu References")]
     public GameObject menuCam;
     public GameObject canvas;
@@ -26,6 +28,7 @@ public class MenuManager : MonoBehaviour
     public TextMeshProUGUI Result;
     public TextMeshProUGUI HighScore;
     public TextMeshProUGUI LowScore;
+    [SerializeField] private GameObject PlayAgainButton;
 
     public static MenuManager Instance { get; private set; }
 
@@ -104,13 +107,23 @@ public class MenuManager : MonoBehaviour
 
     private void OnStageChanged(GameStage oldStage, GameStage newStage)
     {
-        if (oldStage == GameStage.PLAY && newStage == GameStage.JOIN)
+        if (oldStage == GameStage.PLAY && newStage == GameStage.RESULT)
         {
             EnableMenu();
             ScoreEvaluator.Evaluate(this);
             lobbyMenu.SetActive(false);
             scoreboard.SetActive(true);
             HideHud();
+            PlayAgainButton.SetActive(networkManager != null && networkManager.IsServer);
+
+            return;
+        }
+        
+        if (oldStage == GameStage.RESULT && newStage != GameStage.RESULT && newStage != GameStage.NONE)
+        {
+            scoreboard.SetActive(false);
+            DisableMenu();
+            ShowHud();
         }
     }
 
@@ -119,6 +132,7 @@ public class MenuManager : MonoBehaviour
          DisableMenu();
          scoreboard.SetActive(false);
          ShowHud();
+         GameManager.Instance.PlayAgain();
     }
 
     public void onLeave()
