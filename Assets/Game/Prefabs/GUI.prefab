@@ -52,11 +52,15 @@ MonoBehaviour:
   lobbyMenu: {fileID: 6758255566070183158}
   pauseMenu: {fileID: 1669253986695479019}
   hud: {fileID: 3167528064711100698}
+  scoreboard: {fileID: 0}
   relayManager: {fileID: 0}
   discoveryStatusText: {fileID: 8756289841027204883}
   joinCodeDisplayText: {fileID: 8898383922702312793}
   joinCodeInput: {fileID: 4333853482532425668}
   joinFoundGameButton: {fileID: 4505781045338185420}
+  Result: {fileID: 0}
+  HighScore: {fileID: 0}
+  LowScore: {fileID: 0}
 --- !u!1 &500893129109001665
 GameObject:
   m_ObjectHideFlags: 0
@@ -892,6 +896,10 @@ MonoBehaviour:
   Health: {fileID: 4858729742200737862}
   CountDown: {fileID: 5270530981524401099}
   Stage: {fileID: 7611591769962751974}
+  timeWarningStart: 30
+  timeWarningFullAt: 25
+  timerWarningScale: 1.4
+  timeWarningColor: {r: 1, g: 0, b: 0, a: 1}
 --- !u!1 &3178933698632473821
 GameObject:
   m_ObjectHideFlags: 0
@@ -3386,6 +3394,7 @@ GameObject:
   - component: {fileID: 8621405381280424297}
   - component: {fileID: 6773926349162047681}
   - component: {fileID: 3214309034113920730}
+  - component: {fileID: -7744159438673424303}
   m_Layer: 0
   m_Name: MenuCam
   m_TagString: MainCamera
@@ -3511,6 +3520,20 @@ MonoBehaviour:
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
   m_Version: 2
+--- !u!114 &-7744159438673424303
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8259502712797869061}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 86c6556701af9e04380698b89f691b6e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: FMODUnity::FMODUnity.StudioListener
+  nonRigidbodyVelocity: 0
+  attenuationObject: {fileID: 0}
 --- !u!1 &8986019541630839922
 GameObject:
   m_ObjectHideFlags: 0
