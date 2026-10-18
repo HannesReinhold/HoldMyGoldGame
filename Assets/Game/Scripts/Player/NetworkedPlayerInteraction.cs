@@ -352,8 +352,10 @@ public class NetworkedPlayerInteraction : NetworkBehaviour
 
         int amount = location.TryTake(playerUpgradeStats);
         if (amount > 0)
+        {
             networkedPlayer.itemCount.Value += amount;
-        networkedPlayer.PlayPickupSound();
+            networkedPlayer.PlayPickupSound();
+        }
     }
 
     [ServerRpc]

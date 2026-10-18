@@ -160,8 +160,10 @@ MonoBehaviour:
   highlightVisual: {fileID: 7901194222821122247}
   amountPerPickup: 1
   interactRadius: 3
-  cooldown: 1
+  cooldown: 0.5
   numBars: 1000
+  respawnEnabled: 1
+  respawnDelay: 10
   goldBarPrefab: {fileID: 0}
   stackOrigin: {fileID: 0}
   randomSeed: 12345

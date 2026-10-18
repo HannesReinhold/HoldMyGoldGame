@@ -13,6 +13,12 @@ public class PickupLocation : HighlightableZone
     [Header("Gold")]
     public int numBars = 1000;
 
+    [Header("Respawn")]
+    [SerializeField] private bool respawnEnabled = true;
+    [SerializeField] private float respawnDelay = 15f;
+
+    private float respawnTime = -1f;
+
     private NetworkVariable<int> syncedNumBars = new NetworkVariable<int>(
         1000,
         NetworkVariableReadPermission.Everyone,
@@ -75,6 +81,23 @@ public class PickupLocation : HighlightableZone
     {
         numBars = newValue;
         ReconcileStack(newValue);
+    }
+
+    private void Update()
+    {
+        if (!IsServer) return;
+        if (!respawnEnabled) return;
+        if (respawnTime < 0f) {
+            respawnTime = Time.time + respawnDelay;
+            return;
+        };
+
+        if (Time.time < respawnTime) return;
+
+        // Goldbarren vollständig wiederherstellen.
+        syncedNumBars.Value = Mathf.Min(NumBars+1,1000);
+
+        respawnTime = Time.time + respawnDelay;
     }
 
     // Nur auf dem Server aufrufen. Gibt die Anzahl zurück, die der Spieler bekommt.
