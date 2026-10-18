@@ -34,6 +34,14 @@ public class NetworkedPlayerInteraction : NetworkBehaviour
     public float maxDropHeightDiff = 1f;
     public LayerMask dropSurfaceLayers = ~0;   // nur Welt, NICHT Player/PlayerHitbox
 
+    [Header("Throw Trajectory")]
+    [Tooltip("Grundwinkel in Grad. Negativ = nach unten")]
+    public float throwBasePitch = -5f;
+    [Tooltip("0 = Kamerawinkel ignorieren, 1 = voll übernehmen")]
+    [Range(0f, 1f)] public float aimInfluence = 0.5f;
+    public float minThrowPitch = -25f;   // steilster Winkel nach unten
+    public float maxThrowPitch = 0f;     // 0 = nie nach oben, positive Werte erlauben einen Bogen
+
     private bool isCharging;
     private float chargeStartTime;
 
@@ -269,6 +277,7 @@ public class NetworkedPlayerInteraction : NetworkBehaviour
         // Client-Werten nie trauen
         charge01 = Mathf.Clamp01(charge01);
         throwDirection = throwDirection.sqrMagnitude > 0.001f ? throwDirection.normalized : transform.forward;
+        throwDirection = ComputeThrowDirection(throwDirection);
 
         float force = 0f;
         if (charge01 >= tapThreshold)
@@ -292,14 +301,29 @@ public class NetworkedPlayerInteraction : NetworkBehaviour
                 : transform.position + transform.forward * dropForwardOffset + Vector3.up * dropUpOffset;
         }
 
+        if (!isTap)
+        {
+            // Spawnpunkt nicht hinter einer Wand
+            Vector3 origin = transform.position + Vector3.up * 1f;
+            if (Physics.Linecast(origin, spawnPosition, out RaycastHit wall,
+                    dropSurfaceLayers, QueryTriggerInteraction.Ignore))
+                spawnPosition = wall.point + wall.normal * 0.2f;
+        }
+
         NetworkObject droppedItem = Instantiate(itemPrefab, spawnPosition, Quaternion.identity);
 
-        if (force > 0f && droppedItem.TryGetComponent(out Rigidbody rb))
-            rb.AddForce(throwDirection * force, ForceMode.Impulse);
+        if (!isTap)
+        {
+            if (droppedItem.TryGetComponent(out Rigidbody rb))
+                rb.AddForce(throwDirection * force, ForceMode.Impulse);
+
+            // Nur geworfene Items sind gefährlich
+            if (droppedItem.TryGetComponent(out ItemHitDamage hit))
+                hit.Arm(OwnerClientId);
+        }
 
         droppedItem.Spawn();
-
-        networkedPlayer.itemCount.Value--;
+        networkedPlayer.itemCount.Value--; ;
     }
 
     [ServerRpc]
@@ -424,6 +448,19 @@ public class NetworkedPlayerInteraction : NetworkBehaviour
         Gizmos.color = Color.green;
         foreach (var p in tapDropPoints)
             if (p != null) Gizmos.DrawWireSphere(p.position, 0.15f);
+    }
+
+    private Vector3 ComputeThrowDirection(Vector3 aimDir)
+    {
+        // Seitenrichtung (Yaw) kommt aus dem Blick, die Neigung wird neu bestimmt
+        Vector3 flat = new Vector3(aimDir.x, 0f, aimDir.z);
+        flat = flat.sqrMagnitude > 0.001f ? flat.normalized : transform.forward;
+
+        float aimPitchUp = Mathf.Asin(Mathf.Clamp(aimDir.normalized.y, -1f, 1f)) * Mathf.Rad2Deg;
+        float pitchUp = Mathf.Clamp(throwBasePitch + aimPitchUp * aimInfluence, minThrowPitch, maxThrowPitch);
+
+        float rad = pitchUp * Mathf.Deg2Rad;
+        return flat * Mathf.Cos(rad) + Vector3.up * Mathf.Sin(rad);
     }
 }
 

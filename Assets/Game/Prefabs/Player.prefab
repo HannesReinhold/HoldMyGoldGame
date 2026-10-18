@@ -166,7 +166,6 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1326003743626191969}
-  - {fileID: 3380687213570576884}
   - {fileID: 949799104741543003}
   - {fileID: 815508207310199576}
   - {fileID: 3703352731899291279}
@@ -510,6 +509,10 @@ MonoBehaviour:
   dropSurfaceLayers:
     serializedVersion: 2
     m_Bits: 513
+  throwBasePitch: -3.5
+  aimInfluence: 1
+  minThrowPitch: -45
+  maxThrowPitch: 50
   enableInteractions: 1
 --- !u!65 &438196879867463906
 BoxCollider:
@@ -571,7 +574,7 @@ MonoBehaviour:
   randomRotation: 1
   columns: 2
   rows: 2
-  barSpacing: {x: 0.26, y: 0.14, z: 0.4}
+  barSpacing: {x: 0.26, y: 0.12, z: 0.4}
 --- !u!1 &3557858841055659239
 GameObject:
   m_ObjectHideFlags: 0
@@ -634,6 +637,37 @@ Transform:
   m_Children: []
   m_Father: {fileID: 2165066496292194191}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &4726957220483722978
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 795745630547720944}
+  m_Layer: 7
+  m_Name: EyePoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &795745630547720944
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4726957220483722978}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.49999934, y: -0.5, z: -0.50000006, w: -0.5000006}
+  m_LocalPosition: {x: -0.0538, y: 0.0733, z: -0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1597494566511399661}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4927563810153721009
 GameObject:
   m_ObjectHideFlags: 0
@@ -691,12 +725,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5731507008725031861}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.491, z: 0.93}
+  m_LocalRotation: {x: 0.49999934, y: -0.5, z: -0.50000006, w: -0.5000006}
+  m_LocalPosition: {x: 0, y: 1.76, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 2165066496292194191}
+  m_Father: {fileID: 1597494566511399661}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7550254050635311613
 GameObject:
@@ -1396,7 +1430,13 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 2191348686980463455, guid: 53d400b9ba765294a849519b33520be4, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3380687213570576884}
+    - targetCorrespondingSourceObject: {fileID: 2191348686980463455, guid: 53d400b9ba765294a849519b33520be4, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 795745630547720944}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 9166125617791607897, guid: 53d400b9ba765294a849519b33520be4, type: 3}
       insertIndex: -1
@@ -1447,11 +1487,39 @@ MonoBehaviour:
   cam: {fileID: 5340447060612071793}
   spine: {fileID: 5683179670044571755}
   head: {fileID: 1597494566511399661}
+  eyePoint: {fileID: 795745630547720944}
   spineWeight: 1
   headWeight: 0
   maxBonePitch: 70
-  cameraFollowsHead: 1
-  cameraOffset: {x: 0, y: -0.2, z: 0.1}
+  lookDownFollow: 1
+  lookUpLift: 0.15
+  lookUpForward: 0
+  maxLookUpAngle: 90
+  liftCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  cameraRestOffset: {x: 0, y: -0.2, z: 0.1}
 --- !u!114 &8992925157191374593
 MonoBehaviour:
   m_ObjectHideFlags: 0
