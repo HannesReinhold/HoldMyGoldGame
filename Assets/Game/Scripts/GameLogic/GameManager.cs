@@ -61,7 +61,7 @@ public class GameManager : NetworkBehaviour
 
     // Im Countdown und im Ergebnis darf sich niemand bewegen
     public bool ControlsAllowedByStage =>
-        CurrentStage != GameStage.COUNTDOWN && CurrentStage != GameStage.RESULT;
+        CurrentStage != GameStage.COUNTDOWN && CurrentStage != GameStage.RESULT && CurrentStage != GameStage.JOIN;
 
     private void Awake()
     {
@@ -132,6 +132,7 @@ public class GameManager : NetworkBehaviour
         Debug.Log($"Stage: {oldStage} -> {newStage}");
         StageChanged?.Invoke(oldStage, newStage);
         ApplyStageToLocalPlayer();
+        ApplyStageCamera(newStage);
     }
 
     public void ApplyStageToLocalPlayer()
@@ -333,5 +334,28 @@ public class GameManager : NetworkBehaviour
         // Update() startet den Countdown automatisch, wenn genug
         // PlayerObjects vorhanden sind.
         SetStage(GameStage.JOIN);
+    }
+
+    private void ApplyStageCamera(GameStage currentStage)
+    {
+        if (MenuManager.Instance == null)
+            return;
+
+        switch (currentStage)
+        {
+            case GameStage.JOIN:
+            case GameStage.RESULT:
+                MenuManager.Instance.setMenuCam(true);
+                break;
+
+            case GameStage.COUNTDOWN:
+            case GameStage.PLAY:
+                MenuManager.Instance.setMenuCam(false);
+                break;
+
+            default:
+                // NONE: Menüverhalten nach deinem Hauptmenü-Konzept
+                break;
+        }
     }
 }

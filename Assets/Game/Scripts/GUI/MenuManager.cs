@@ -35,6 +35,8 @@ public class MenuManager : MonoBehaviour
 
     public bool IsPauseMenuOpen => pauseMenu != null && pauseMenu.activeSelf;
 
+    private bool MenuCamOverride = false;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -325,7 +327,7 @@ public class MenuManager : MonoBehaviour
     public void DisableMenu()
     {
         if (menuCam != null)
-            menuCam.SetActive(false);
+            menuCam.SetActive(MenuCamOverride);
 
         if (canvas != null)
             canvas.SetActive(false);
@@ -333,7 +335,7 @@ public class MenuManager : MonoBehaviour
         if (GameManager.Instance != null &&
             GameManager.Instance.localPlayer != null)
         {
-            GameManager.Instance.localPlayer.SetEnablePlayerCamera(true);
+            GameManager.Instance.localPlayer.SetEnablePlayerCamera(!MenuCamOverride);
         }
 
         Cursor.lockState = CursorLockMode.Locked;
@@ -356,6 +358,22 @@ public class MenuManager : MonoBehaviour
 
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
+    }
+
+    public void setMenuCam(bool state)
+    {
+        MenuCamOverride = state;
+
+        if (menuCam != null)
+            menuCam.SetActive(state);
+
+        if (GameManager.Instance != null &&
+           GameManager.Instance.localPlayer != null)
+        {
+            GameManager.Instance.localPlayer.SetEnablePlayerCamera(!state);
+        }
+
+        SetPlayerControlsBlocked(!GameManager.Instance.ControlsAllowedByStage);
     }
 
     public void OpenLobbyMenu()

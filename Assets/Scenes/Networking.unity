@@ -8757,7 +8757,7 @@ MonoBehaviour:
   localPlayer: {fileID: 0}
   requiredPlayers: 2
   countdownSeconds: 3
-  playSeconds: 300
+  playSeconds: 10
   resultSeconds: 10
   allowSoloStart: 1
   gameplaySceneName: Networking
