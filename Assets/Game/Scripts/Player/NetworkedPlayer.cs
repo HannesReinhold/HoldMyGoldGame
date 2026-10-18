@@ -1,6 +1,7 @@
 using FMODUnity;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.Rendering.Universal;
 
 public class NetworkedPlayer : NetworkBehaviour
 {
@@ -46,7 +47,7 @@ public class NetworkedPlayer : NetworkBehaviour
 
     [Header("Death Drop")]
     public NetworkObject goldItemPrefab;            // dasselbe Prefab wie beim Werfen
-    [Range(0f, 1f)] public float dropFraction = 1f; // 1 = alles, 0.5 = die Hälfte
+    [Range(0f, 1f)] public float dropFraction = 1f; // 1 = alles, 0.5 = die Hï¿½lfte
     public int maxDroppedItems = 100;                // Obergrenze physischer Items
     public float scatterForce = 2f;
     public float dropRadius = 0.9f;
@@ -131,14 +132,25 @@ public class NetworkedPlayer : NetworkBehaviour
         }
 
         if (IsOwner)
+        {
             GameManager.Instance.localPlayer = this;
-
-
+            health.OnValueChanged += onOwnHealthChanged;
+        }
+        
         // subscribe to walking
         isWalkingNetworked.OnValueChanged += OnWalkingStateChanged;
 
         footstepTimer = 0f;
         ApplyWalkingSound(isWalkingNetworked.Value);
+    }
+    
+    private void onOwnHealthChanged(int previousValue, int newValue)
+    {
+        var renderer = VignetteRender.Instance;
+        if (renderer != null)
+        {
+            renderer.SetHealth(newValue, maxHealth);
+        }
     }
 
     public override void OnNetworkDespawn()
@@ -192,7 +204,7 @@ public class NetworkedPlayer : NetworkBehaviour
             }
         }
 
-        Debug.LogWarning($"Kein PlayerSpawnPoint für Slot {slot}");
+        Debug.LogWarning($"Kein PlayerSpawnPoint fï¿½r Slot {slot}");
         rotation = transform.rotation;
         return transform.position;
     }
@@ -263,19 +275,19 @@ public class NetworkedPlayer : NetworkBehaviour
 
         for (int i = 0; i < amount; i++)
         {
-            // gleichmäßig auf einem Ring verteilt, leicht zufällig versetzt
+            // gleichmï¿½ï¿½ig auf einem Ring verteilt, leicht zufï¿½llig versetzt
             float angle = (i / (float)amount) * Mathf.PI * 2f + Random.Range(-0.2f, 0.2f);
             Vector3 dir = new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle));
 
-            // Höhe abwechselnd versetzt, damit Nachbarn sich nicht im selben Level überlappen
+            // Hï¿½he abwechselnd versetzt, damit Nachbarn sich nicht im selben Level ï¿½berlappen
             Vector3 pos = transform.position + dir * dropRadius + Vector3.up * (0.6f + (i % 2) * 0.3f);
 
             NetworkObject item = Instantiate(goldItemPrefab, pos, Quaternion.identity);
 
             if (item.TryGetComponent(out Rigidbody rb))
             {
-                rb.maxDepenetrationVelocity = 1f;   // begrenzt das Herausdrücken aus Überlappungen
-                rb.AddForce(dir * scatterForce, ForceMode.VelocityChange);   // masseunabhängig, in m/s
+                rb.maxDepenetrationVelocity = 1f;   // begrenzt das Herausdrï¿½cken aus ï¿½berlappungen
+                rb.AddForce(dir * scatterForce, ForceMode.VelocityChange);   // masseunabhï¿½ngig, in m/s
             }
 
             item.Spawn();
