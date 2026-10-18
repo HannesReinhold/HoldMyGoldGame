@@ -177,7 +177,7 @@ MonoBehaviour:
   Path: HodMyGoldAudioProject/Build/Desktop/Master.strings.bank
   Name: Master.strings
   StudioPath: bank:/Master.strings
-  lastModified: 639279357316172911
+  lastModified: 639279372213390923
   FileSizes:
   - Name: Desktop
     Value: 1550
@@ -248,7 +248,7 @@ MonoBehaviour:
   StringsBanks:
   - {fileID: -2037107448056762161}
   cacheVersion: 132096
-  cacheTime: 639279379172262155
+  cacheTime: 639279375704250841
   SerializableEventsDict:
   - key: event:/GoldHitGround
     index: 0
@@ -326,7 +326,7 @@ MonoBehaviour:
   Path: HodMyGoldAudioProject/Build/Desktop/Master.bank
   Name: Master
   StudioPath: bank:/Master
-  lastModified: 639279379172262155
+  lastModified: 639279375704250841
   FileSizes:
   - Name: Desktop
     Value: 2541248
