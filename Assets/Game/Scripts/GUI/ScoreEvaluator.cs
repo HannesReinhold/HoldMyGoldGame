@@ -1,4 +1,5 @@
 using TMPro;
+using Unity.Netcode;
 using UnityEditor;
 using UnityEngine;
 
@@ -22,6 +23,14 @@ public static class ScoreEvaluator
             {
                 enemyScore = z.StoredItems;
             }
+        }
+        
+        if (NetworkManager.Singleton.ConnectedClientsList.Count == 1)
+        {
+            manager.Result.text = "";
+            manager.HighScore.text = "Your score: " + ownScore;
+            manager.LowScore.text = "";
+            return;
         }
 
         if (enemyScore > ownScore)
