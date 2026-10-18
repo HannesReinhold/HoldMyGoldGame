@@ -268,7 +268,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 3059258757
+  GlobalObjectIdHash: 2856043236
   InScenePlacedSourceGlobalObjectIdHash: 0
   m_InScenePlacedDisabledByDefault: 0
   DeferredDespawnTick: 0
@@ -378,7 +378,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerMovement
   networkedPlayer: {fileID: 6540924311002986634}
-  maxItemsForSlowdown: 100
+  maxItemsForSlowdown: 60
   slowdownCurve:
     serializedVersion: 2
     m_Curve:
@@ -1491,7 +1491,33 @@ MonoBehaviour:
   spineWeight: 1
   headWeight: 0
   maxBonePitch: 70
-  lookDownFollow: 1
+  lookDownLower: 0.2
+  lookDownForward: 0.31
+  maxLookDownAngle: 90
+  downCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
   lookUpLift: 0.15
   lookUpForward: 0
   maxLookUpAngle: 90
@@ -1519,7 +1545,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  cameraRestOffset: {x: 0, y: -0.2, z: 0.1}
+  cameraRestOffset: {x: 0, y: -0.2, z: 0.14}
 --- !u!114 &8992925157191374593
 MonoBehaviour:
   m_ObjectHideFlags: 0

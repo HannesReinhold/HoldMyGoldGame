@@ -16,7 +16,10 @@ public class PlayerLookRig : NetworkBehaviour
     [SerializeField] private float maxBonePitch = 70f;
 
     [Header("Kamera: Runterschauen")]
-    [Range(0f, 1f)] [SerializeField] private float lookDownFollow = 1f;   // wie stark die Kamera dem Körper nach unten folgt
+    [SerializeField] private float lookDownLower = 0.10f;     // Meter nach unten bei vollem Runterschauen
+    [SerializeField] private float lookDownForward = 0.15f;   // Meter nach vorn
+    [SerializeField] private float maxLookDownAngle = 90f;
+    [SerializeField] private AnimationCurve downCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
     [Header("Kamera: Hochschauen")]
     [SerializeField] private float lookUpLift = 0.15f;
@@ -98,10 +101,6 @@ public class PlayerLookRig : NetworkBehaviour
         Restore(spineState);
         Restore(headState);
 
-        // 2) Neutrale Position des Kopfes (ohne unsere Neigung), im Raum des Spielers
-        Transform anchor = eyePoint != null ? eyePoint : head;
-        Vector3 neutral = anchor != null ? transform.InverseTransformPoint(anchor.position) : Vector3.zero;
-
         // 3) Neigung anwenden
         Apply(spineState, pitch * spineWeight, axis);
         Apply(headState, pitch * headWeight, axis);
@@ -109,17 +108,17 @@ public class PlayerLookRig : NetworkBehaviour
         // 4) Kamera
         if (IsOwner && cam != null && camBaseCached)
         {
-            Vector3 offset = Vector3.zero;
+            Vector3 offset;
 
-            if (shownPitch > 0f && anchor != null)
+            if (shownPitch >= 0f)
             {
-                // Runterschauen: Bewegung des Kopfes durch die Neigung übernehmen
-                Vector3 now = transform.InverseTransformPoint(anchor.position);
-                offset = (now - neutral) * lookDownFollow;
+                // Runterschauen: Kopf lehnt sich nach vorn und unten
+                float k = downCurve.Evaluate(Mathf.Clamp01(shownPitch / maxLookDownAngle));
+                offset = new Vector3(0f, -lookDownLower * k, lookDownForward * k);
             }
-            else if (shownPitch < 0f)
+            else
             {
-                // Hochschauen: nur anheben
+                // Hochschauen: anheben
                 float k = liftCurve.Evaluate(Mathf.Clamp01(-shownPitch / maxLookUpAngle));
                 offset = Vector3.up * (lookUpLift * k) + Vector3.forward * (lookUpForward * k);
             }
