@@ -75,7 +75,7 @@ MonoBehaviour:
   Ownership: 1
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
-  m_InScenePlaced: 1
+  m_InScenePlaced: 0
   ActiveSceneSynchronization: 0
   SceneMigrationSynchronization: 0
   SpawnWithObservers: 1
@@ -106,6 +106,13 @@ MonoBehaviour:
   plateMesh: {fileID: 4915642592818990693}
   pressDistance: 0.05
   moveSpeed: 5
+  pressedSound:
+    Guid:
+      Data1: -1552167616
+      Data2: 1216179259
+      Data3: -1752303186
+      Data4: 1581543596
+    Path: event:/Traps/PressurePlate
 --- !u!1001 &4915642592819385573
 PrefabInstance:
   m_ObjectHideFlags: 0

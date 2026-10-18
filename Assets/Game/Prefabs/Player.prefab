@@ -269,7 +269,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 3059258757
+  GlobalObjectIdHash: 2856043236
   InScenePlacedSourceGlobalObjectIdHash: 0
   m_InScenePlacedDisabledByDefault: 0
   DeferredDespawnTick: 0
@@ -333,7 +333,7 @@ MonoBehaviour:
       Data2: 1228571912
       Data3: -559195464
       Data4: 1883272579
-    Path: event:/Jump
+    Path: event:/Player/Jump
   walkingEmitter: {fileID: 3895943366990389565}
   footstepEvent:
     Guid:
@@ -341,7 +341,7 @@ MonoBehaviour:
       Data2: 1105480752
       Data3: 1467976633
       Data4: -330628974
-    Path: event:/Footsteps
+    Path: event:/Player/Footsteps
   fastestStepInterval: 0.6
   slowestStepInterval: 1.5
   movementInputThreshold: 0.1
@@ -352,21 +352,28 @@ MonoBehaviour:
       Data2: 1323708988
       Data3: 1355313293
       Data4: 1624827711
-    Path: event:/Throw
+    Path: event:/Interaction/Throw
   pickupEvent:
     Guid:
       Data1: -1735416686
       Data2: 1223982612
       Data3: -717744250
       Data4: -379116293
-    Path: event:/Pickup
+    Path: event:/Interaction/Pickup
   depositEvent:
     Guid:
       Data1: -501835557
       Data2: 1074311914
       Data3: 1050378143
       Data4: 1429522093
-    Path: event:/DepositGold
+    Path: event:/Interaction/DepositGold
+  deathSoundEvent:
+    Guid:
+      Data1: 1086718492
+      Data2: 1338687614
+      Data3: -1788008778
+      Data4: 1720149357
+    Path: event:/Player/PlayerDeath
 --- !u!114 &6121316786019787671
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -488,7 +495,7 @@ MonoBehaviour:
   dropPosition: {fileID: 3380687213570576884}
   itemPrefab: {fileID: 5400267961435067128, guid: 635f6f53a75e2a545a56cb6e05ef25c8, type: 3}
   networkedPlayer: {fileID: 6540924311002986634}
-  playerUpgradeStats: {fileID: 5203531855180082384}
+  playerUpgradeStats: {fileID: 0}
   pickupRange: 3
   highlightRange: 5
   pickupLayers:

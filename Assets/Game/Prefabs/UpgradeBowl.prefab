@@ -363,29 +363,11 @@ ParticleSystem:
   startDelay:
     serializedVersion: 3
     minMaxState: 3
-    scalar: 1
+    scalar: 0
     minScalar: 0
     maxCurve:
       serializedVersion: 2
-      m_Curve:
-      - serializedVersion: 3
-        time: 0
-        value: 0
-        inSlope: 0
-        outSlope: 0
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 1
-        value: 0
-        inSlope: 0
-        outSlope: 0
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
+      m_Curve: []
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
@@ -798,7 +780,7 @@ ParticleSystem:
           m_PostInfinity: 2
           m_RotationOrder: 4
       cycleCount: 1
-      repeatInterval: 1
+      repeatInterval: 0.01
       probability: 1
   SizeModule:
     enabled: 0
@@ -2803,6 +2785,7 @@ Transform:
   - {fileID: 6685913638437464971}
   - {fileID: 2037197353857524974}
   - {fileID: 6215520223113163354}
+  - {fileID: 3520764047133142795}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!65 &3735512203205835316
@@ -2838,14 +2821,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 2579449127
+  GlobalObjectIdHash: 1649063740
   InScenePlacedSourceGlobalObjectIdHash: 0
   m_InScenePlacedDisabledByDefault: 0
   DeferredDespawnTick: 0
   Ownership: 1
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
-  m_InScenePlaced: 1
+  m_InScenePlaced: 0
   ActiveSceneSynchronization: 0
   SceneMigrationSynchronization: 0
   SpawnWithObservers: 1
@@ -2869,18 +2852,18 @@ MonoBehaviour:
   maxFireScale: 2.5
   goldIntoFireEvent:
     Guid:
-      Data1: 1275055234
-      Data2: 1323708988
-      Data3: 1355313293
-      Data4: 1624827711
-    Path: event:/Throw
+      Data1: -544767442
+      Data2: 1162393130
+      Data3: -803249242
+      Data4: -35654704
+    Path: event:/Upgrad/OfferGoldBar
   upgradeGrantedEvent:
     Guid:
-      Data1: -501835557
-      Data2: 1074311914
-      Data3: 1050378143
-      Data4: 1429522093
-    Path: event:/DepositGold
+      Data1: 824480795
+      Data2: 1168195768
+      Data3: -287532657
+      Data4: 2076577318
+    Path: event:/Upgrad/UpgradeGranted
   upgradeType: 0
   barsRequired: 10
   priceIncreasePerUpgrade: 5
@@ -5324,6 +5307,69 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!1 &8040337671335330780
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3520764047133142795}
+  - component: {fileID: 850796098404290712}
+  m_Layer: 0
+  m_Name: FireCrackle
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3520764047133142795
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8040337671335330780}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7596411029084391637}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &850796098404290712
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8040337671335330780}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9a6610d2e704f1648819acc8d7460285, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: FMODUnity::FMODUnity.StudioEventEmitter
+  CollisionTag: 
+  EventReference:
+    Guid:
+      Data1: 4723960
+      Data2: 1137349060
+      Data3: 1087548305
+      Data4: -1463983487
+    Path: event:/Upgrad/FireCrackle
+  Event: 
+  EventPlayTrigger: 1
+  EventStopTrigger: 2
+  AllowFadeout: 1
+  TriggerOnce: 0
+  Preload: 0
+  NonRigidbodyVelocity: 0
+  Params: []
+  OverrideAttenuation: 0
+  OverrideMinDistance: 1
+  OverrideMaxDistance: 20
 --- !u!1001 &6685913638437859595
 PrefabInstance:
   m_ObjectHideFlags: 0

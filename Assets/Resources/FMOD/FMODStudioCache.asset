@@ -177,7 +177,7 @@ MonoBehaviour:
   Path: HodMyGoldAudioProject/Build/Desktop/Master.strings.bank
   Name: Master.strings
   StudioPath: bank:/Master.strings
-  lastModified: 639279357316172911
+  lastModified: 639279372213390923
   FileSizes:
   - Name: Desktop
     Value: 1550
@@ -248,26 +248,42 @@ MonoBehaviour:
   StringsBanks:
   - {fileID: -2037107448056762161}
   cacheVersion: 132096
-  cacheTime: 639279357316172911
+  cacheTime: 639279375704250841
   SerializableEventsDict:
-  - key: event:/Among
-    index: 0
-  - key: event:/Among 2
-    index: 1
-  - key: event:/Footsteps
-    index: 2
-  - key: event:/Jump
-    index: 3
-  - key: event:/CartWheel
-    index: 4
   - key: event:/GoldHitGround
+    index: 0
+  - key: event:/Player/Footsteps
+    index: 1
+  - key: event:/Upgrad/UpgradeGranted
+    index: 2
+  - key: event:/Player/PlayerDeath
+    index: 3
+  - key: event:/Player/PlayerDamage
+    index: 4
+  - key: event:/Upgrad/OfferGoldBar
     index: 5
-  - key: event:/Throw
+  - key: event:/Traps/PressurePlate
     index: 6
-  - key: event:/Pickup
+  - key: event:/Traps/BridgeCreak
     index: 7
-  - key: event:/DepositGold
+  - key: event:/Interaction/Throw
     index: 8
+  - key: event:/OST/SOundtrack
+    index: 9
+  - key: event:/Interaction/Pickup
+    index: 10
+  - key: event:/Player/CartWheel
+    index: 11
+  - key: event:/Traps/BridgeBreak
+    index: 12
+  - key: event:/GoldHit
+    index: 13
+  - key: event:/Player/Jump
+    index: 14
+  - key: event:/Interaction/DepositGold
+    index: 15
+  - key: event:/Upgrad/FireCrackle
+    index: 16
 --- !u!114 &799188601076202998
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -310,10 +326,10 @@ MonoBehaviour:
   Path: HodMyGoldAudioProject/Build/Desktop/Master.bank
   Name: Master
   StudioPath: bank:/Master
-  lastModified: 639279357316162993
+  lastModified: 639279375704250841
   FileSizes:
   - Name: Desktop
-    Value: 2510656
+    Value: 2541248
   Exists: 1
 --- !u!114 &2986953951620954962
 MonoBehaviour:

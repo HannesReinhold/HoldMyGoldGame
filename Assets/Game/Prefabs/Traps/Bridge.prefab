@@ -108,7 +108,7 @@ MonoBehaviour:
   Ownership: 1
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
-  m_InScenePlaced: 1
+  m_InScenePlaced: 0
   ActiveSceneSynchronization: 0
   SceneMigrationSynchronization: 0
   SpawnWithObservers: 1
@@ -137,6 +137,20 @@ MonoBehaviour:
   wiggleFrequency: 26
   maxWiggleHeight: 0.025
   extraWeightForMaxWiggle: 10
+  wiggleLoopEvent:
+    Guid:
+      Data1: -1084912543
+      Data2: 1321228209
+      Data3: -2065918290
+      Data4: 632700633
+    Path: event:/Traps/BridgeCreak
+  breakingSoundEvent:
+    Guid:
+      Data1: -445219646
+      Data2: 1199419194
+      Data3: -2000702335
+      Data4: 134250220
+    Path: event:/Traps/BridgeBreak
   activatedVisual: {fileID: 0}
   deactivatedVisual: {fileID: 0}
   brokenVisual: {fileID: 0}

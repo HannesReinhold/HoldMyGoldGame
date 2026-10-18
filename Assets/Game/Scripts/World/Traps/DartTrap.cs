@@ -1,5 +1,6 @@
 using Unity.Netcode;
 using UnityEngine;
+using FMODUnity;
 
 public class DartTrap : NetworkBehaviour
 {
@@ -7,6 +8,9 @@ public class DartTrap : NetworkBehaviour
     [SerializeField] private NetworkObject dartPrefab;
     [SerializeField] private Transform dartSpawnPoint;
     [SerializeField] private float dartSpeed = 20f;
+
+    [Header("FMOD Sound")]
+    [SerializeField] private EventReference shootSoundEvent;
 
     public void Fire()
     {
@@ -29,7 +33,13 @@ public class DartTrap : NetworkBehaviour
 
         dart.Spawn();
 
-        dart.GetComponent<ItemHitDamage>().Arm(ulong.MaxValue);
+        ItemHitDamage hitDamage =
+            dart.GetComponent<ItemHitDamage>();
+
+        if (hitDamage != null)
+        {
+            hitDamage.Arm(ulong.MaxValue);
+        }
 
         Rigidbody rb = dart.GetComponent<Rigidbody>();
 
@@ -43,5 +53,19 @@ public class DartTrap : NetworkBehaviour
             Debug.LogWarning(
                 "Dart prefab needs a Rigidbody.", dart);
         }
+
+        // Play the shooting sound on every client, including the host.
+        PlayShootSoundClientRpc(dartSpawnPoint.position);
+    }
+
+    [ClientRpc]
+    private void PlayShootSoundClientRpc(Vector3 soundPosition)
+    {
+        if (shootSoundEvent.IsNull)
+            return;
+
+        RuntimeManager.PlayOneShot(
+            shootSoundEvent,
+            soundPosition);
     }
 }

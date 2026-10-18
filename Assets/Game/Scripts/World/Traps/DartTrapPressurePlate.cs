@@ -2,6 +2,7 @@
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
+using FMODUnity;
 
 [RequireComponent(typeof(NetworkObject))]
 [RequireComponent(typeof(Collider))]
@@ -52,6 +53,9 @@ public class DartTrapPressurePlate : NetworkBehaviour
 
     public float TotalWeight => totalWeight.Value;
     public bool IsActivated => isActivated.Value;
+
+    [Header("FMOD Sound")]
+    [SerializeField] private EventReference pressedSound;
 
     private void Awake()
     {
@@ -190,6 +194,7 @@ public class DartTrapPressurePlate : NetworkBehaviour
                 hit.GetComponentInParent<PickableItem>() != null)
             {
                 somethingOnPlate = true;
+                PlayPressedSoundClientRpc();
                 break;
             }
         }
@@ -239,5 +244,17 @@ public class DartTrapPressurePlate : NetworkBehaviour
             dartTrap.Fire();
         else
             Debug.LogWarning($"{name}: No DartTrap assigned.", this);
+    }
+
+    [ClientRpc]
+    private void PlayPressedSoundClientRpc()
+    {
+        if (!pressedSound.IsNull)
+        {
+            RuntimeManager.PlayOneShot(
+                pressedSound,
+                transform.position
+            );
+        }
     }
 }

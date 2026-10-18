@@ -4,6 +4,7 @@ using TMPro;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
+using FMODUnity;
 
 public class NetworkedPlayer : NetworkBehaviour
 {
@@ -104,6 +105,9 @@ public class NetworkedPlayer : NetworkBehaviour
     [Header("FMOD Deposit Sound")]
     [SerializeField] private FMODUnity.EventReference depositEvent;
 
+
+    [Header("FMOD Death Sound")]
+    [SerializeField] private EventReference deathSoundEvent;
 
     public override void OnNetworkSpawn()
     {
@@ -305,6 +309,7 @@ public class NetworkedPlayer : NetworkBehaviour
         itemCount.Value = 0;
 
         RespawnClientRpc(OwnerOnly());
+        PlayDeathSoundClientRpc(transform.position);
     }
 
     private void DropGoldOnDeath()
@@ -613,5 +618,17 @@ public class NetworkedPlayer : NetworkBehaviour
         timesDied = 0;
 
         RespawnClientRpc(OwnerOnly());   // zurück zum Spawnpunkt
+    }
+
+    [ClientRpc]
+    private void PlayDeathSoundClientRpc(Vector3 deathPosition)
+    {
+        if (deathSoundEvent.IsNull)
+            return;
+
+        RuntimeManager.PlayOneShot(
+            deathSoundEvent,
+            deathPosition
+        );
     }
 }

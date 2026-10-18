@@ -86,7 +86,7 @@ MonoBehaviour:
   Ownership: 1
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
-  m_InScenePlaced: 1
+  m_InScenePlaced: 0
   ActiveSceneSynchronization: 0
   SceneMigrationSynchronization: 0
   SpawnWithObservers: 1
@@ -110,6 +110,13 @@ MonoBehaviour:
   dartPrefab: {fileID: 5400267961435067128, guid: 635f6f53a75e2a545a56cb6e05ef25c8, type: 3}
   dartSpawnPoint: {fileID: 5350744169204691111}
   dartSpeed: 40
+  shootSoundEvent:
+    Guid:
+      Data1: 1275055234
+      Data2: 1323708988
+      Data3: 1355313293
+      Data4: 1624827711
+    Path: event:/Interaction/Throw
 --- !u!1001 &3119422349602882129
 PrefabInstance:
   m_ObjectHideFlags: 0
