@@ -163,7 +163,7 @@ MonoBehaviour:
   cooldown: 0.5
   numBars: 1000
   respawnEnabled: 1
-  respawnDelay: 10
+  respawnDelay: 1
   goldBarPrefab: {fileID: 0}
   stackOrigin: {fileID: 0}
   randomSeed: 12345

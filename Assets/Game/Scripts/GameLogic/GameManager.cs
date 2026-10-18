@@ -1,4 +1,5 @@
 using System;
+using FMODUnity;
 using Game.Scripts.GameLogic;
 using TMPro;
 using Unity.Netcode;
@@ -48,6 +49,8 @@ public class GameManager : NetworkBehaviour
 
     // Ohne Verbindung immer NONE
     public GameStage CurrentStage => IsSpawned ? stage.Value : GameStage.NONE;
+
+    [SerializeField] private EventReference soundEvent;
 
     // F�r HUD und Countdown-Anzeige, auf allen Clients gleich
     public float TimeRemaining
@@ -197,6 +200,8 @@ public class GameManager : NetworkBehaviour
 
         if (next == GameStage.COUNTDOWN)
             ResetPlayersForRound();
+
+        RuntimeManager.PlayOneShot(soundEvent, transform.position);
     }
 
     // Z�hlt nur Spieler, deren Objekt schon gespawnt ist
