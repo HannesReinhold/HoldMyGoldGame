@@ -16,15 +16,17 @@ public class ItemHitDamage : NetworkBehaviour
     public float selfImmuneTime = 1f;        // so lange kann der Werfer sein eigenes Item nicht abbekommen
 
     // Nur Server. Ohne Arm() macht das Item nie Schaden (Drop, Todes-Drop, liegende Items).
-    private bool armed;
-    private ulong throwerClientId = NetworkedPlayer.NoAttacker;
-    private float armTime;
+    public bool armed;
+    public ulong throwerClientId = NetworkedPlayer.NoAttacker;
+    public float armTime;
+
 
     public void Arm(ulong thrower)
     {
         armed = true;
         throwerClientId = thrower;
         armTime = Time.time;
+
     }
 
     private void OnCollisionEnter(Collision collision)
