@@ -30,6 +30,8 @@ public class PlayerUpgradeStats : NetworkBehaviour
     public float RunningSpeedMultiplier =>
         1f + RunningSpeedLevel * increasePerLevel;
 
+    public float JumpingHeightMultiplier => 1f + RunningSpeedLevel * increasePerLevel / 2;
+
     public float WidthMultiplier =>
         1f + WidthLevel * increasePerLevel;
 

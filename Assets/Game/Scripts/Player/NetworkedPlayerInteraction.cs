@@ -11,6 +11,7 @@ public class NetworkedPlayerInteraction : NetworkBehaviour
     public Transform dropPosition;
     public NetworkObject itemPrefab;
     public NetworkedPlayer networkedPlayer;
+    public PlayerUpgradeStats playerUpgradeStats;
 
     [Header("Interaction")]
     public float pickupRange = 3f;
@@ -283,7 +284,7 @@ public class NetworkedPlayerInteraction : NetworkBehaviour
         if (charge01 >= tapThreshold)
         {
             float t = (charge01 - tapThreshold) / (1f - tapThreshold);
-            force = Mathf.Lerp(minThrowForce, throwForce, t);
+            force = Mathf.Lerp(minThrowForce, throwForce * playerUpgradeStats.ThrowSpeedMultiplier, t);
         }
 
         bool isTap = force <= 0f;

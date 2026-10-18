@@ -29,7 +29,7 @@ public class NetworkedPlayer : NetworkBehaviour
 
     // item numbers
     public NetworkVariable<int> itemCount = new NetworkVariable<int>(
-            10,
+            0,
             NetworkVariableReadPermission.Everyone,
             NetworkVariableWritePermission.Server
         ); // TODO set to 0

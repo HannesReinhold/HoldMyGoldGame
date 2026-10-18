@@ -9,6 +9,7 @@ public class PlayerMovement : MonoBehaviour
 
     [Header("Gewicht")]
     public NetworkedPlayer networkedPlayer;
+    public PlayerUpgradeStats playerUpgradeStats;
     [SerializeField] private int maxItemsForSlowdown = 10;   // ab hier ist die Kurve am Ende
     [SerializeField] private AnimationCurve slowdownCurve = AnimationCurve.Linear(0f, 1f, 1f, 0f);
 
@@ -111,7 +112,7 @@ public class PlayerMovement : MonoBehaviour
         bool jumpHeld = !inputBlocked && inputActions.FPSController.Jump.IsPressed();
         if (grounded && jumpHeld)
         {
-            float processedJumpHeight = slowdownCurve.Evaluate(t) * jumpHeight;
+            float processedJumpHeight = slowdownCurve.Evaluate(t) * jumpHeight * playerUpgradeStats.JumpingHeightMultiplier;
             velocity.y = Mathf.Sqrt(-2f * gravity * processedJumpHeight);
             networkedPlayer.PlayJumpSound();
         }
@@ -119,7 +120,7 @@ public class PlayerMovement : MonoBehaviour
         velocity.y += gravity * Time.deltaTime;
 
 
-        float processedMovementSpeed = slowdownCurve.Evaluate(t)*movementSpeed;
+        float processedMovementSpeed = slowdownCurve.Evaluate(t)*movementSpeed * playerUpgradeStats.RunningSpeedMultiplier;
         slowdown = slowdownCurve.Evaluate(t);
         Vector3 move = (transform.right * input.x + transform.forward * input.y) * processedMovementSpeed;
 
