@@ -1,11 +1,20 @@
 using Unity.Netcode;
 using UnityEngine;
 using TMPro;
+using FMODUnity;
 
 [RequireComponent(typeof(NetworkObject))]
 [RequireComponent(typeof(Collider))]
 public class UpgradeBowl : NetworkBehaviour
 {
+    [Header("Fire Scaling")]
+    [SerializeField, Min(1f)] private float maxFireScale = 2.5f;
+    private Vector3 baseFireScale;
+
+    [Header("FMOD Sounds")]
+    [SerializeField] private EventReference goldIntoFireEvent;
+    [SerializeField] private EventReference upgradeGrantedEvent;
+
     public enum UpgradeType
     {
         RunningSpeed,
@@ -22,6 +31,10 @@ public class UpgradeBowl : NetworkBehaviour
     [Min(1)]
     [SerializeField] private int barsRequired = 10;
 
+    [Tooltip("Additional gold bars required after each successful upgrade.")]
+    [Min(1)]
+    [SerializeField] private int priceIncreasePerUpgrade = 5;
+
     [Header("World Space UI")]
     [SerializeField] private TMP_Text upgradeText;
     [SerializeField] private TMP_Text priceText;
@@ -29,9 +42,9 @@ public class UpgradeBowl : NetworkBehaviour
 
     [Header("Networked Effects")]
     [SerializeField] private ParticleSystem fireEffect;
-    [SerializeField] private AudioSource audioSource;
-    [SerializeField] private AudioClip goldIntoFireSound;
-    [SerializeField] private AudioClip upgradeGrantedSound;
+
+    [Tooltip("Particle effect played when an upgrade is successfully granted.")]
+    [SerializeField] private ParticleSystem upgradeGrantedEffect;
 
     private readonly NetworkVariable<int> offeredBars =
         new NetworkVariable<int>(
@@ -39,40 +52,95 @@ public class UpgradeBowl : NetworkBehaviour
             NetworkVariableReadPermission.Everyone,
             NetworkVariableWritePermission.Server);
 
-    // The last player who threw a gold bar into the bowl.
+    private readonly NetworkVariable<int> networkBarsRequired =
+        new NetworkVariable<int>(
+            10,
+            NetworkVariableReadPermission.Everyone,
+            NetworkVariableWritePermission.Server);
+
     private ulong lastThrowerClientId = ulong.MaxValue;
 
     public int OfferedBars => offeredBars.Value;
+    public int CurrentPrice => networkBarsRequired.Value;
+
+    private void Awake()
+    {
+        if (fireEffect != null)
+            baseFireScale = fireEffect.transform.localScale;
+    }
 
     public override void OnNetworkSpawn()
     {
         offeredBars.OnValueChanged += OnOfferedBarsChanged;
+        networkBarsRequired.OnValueChanged += OnPriceChanged;
 
-        GetComponent<Collider>().isTrigger = true;
+        // The server initializes the price from the Inspector.
+        if (IsServer)
+            networkBarsRequired.Value = Mathf.Max(1, barsRequired);
 
+        UpdateFlameSize(offeredBars.Value);
         UpdateUI(offeredBars.Value);
     }
 
     public override void OnNetworkDespawn()
     {
         offeredBars.OnValueChanged -= OnOfferedBarsChanged;
+        networkBarsRequired.OnValueChanged -= OnPriceChanged;
     }
 
-    private void OnOfferedBarsChanged(int previous, int current)
+    private void OnOfferedBarsChanged(int previousValue, int newValue)
     {
-        UpdateUI(current);
+        UpdateFlameSize(newValue);
+        UpdateUI(newValue);
+    }
+
+    private void OnPriceChanged(int previousValue, int newValue)
+    {
+        UpdateFlameSize(offeredBars.Value);
+        UpdateUI(offeredBars.Value);
+    }
+
+    private void UpdateFlameSize(int barCount)
+    {
+        if (fireEffect == null)
+            return;
+
+        float price = Mathf.Max(1, CurrentPrice);
+        float progress = Mathf.Clamp01(barCount / price);
+        float scale = Mathf.Lerp(1f, maxFireScale, progress);
+
+        fireEffect.transform.localScale = baseFireScale * scale;
+
+        if (barCount > 0 && !fireEffect.isPlaying)
+            fireEffect.Play();
     }
 
     private void UpdateUI(int count)
     {
         if (upgradeText != null)
-            upgradeText.text = upgradeType.ToString();
+        {
+            switch (upgradeType)
+            {
+                case UpgradeType.RunningSpeed:
+                    upgradeText.text = "Running Seeed";
+                    break;
+                case UpgradeType.PickupSpeed:
+                    upgradeText.text = "Pickup Seeed";
+                    break;
+                case UpgradeType.ThrowSpeed:
+                    upgradeText.text = "Throw Seeed";
+                    break;
+                case UpgradeType.Width:
+                    upgradeText.text = "Cart Width";
+                    break;
+            }
+        }
 
         if (priceText != null)
-            priceText.text = $"Price: {barsRequired} gold";
+            priceText.text = $"Price: {CurrentPrice} gold";
 
         if (offeredText != null)
-            offeredText.text = $"{count} / {barsRequired}";
+            offeredText.text = $"{count} / {CurrentPrice}";
     }
 
     private void OnTriggerEnter(Collider other)
@@ -80,7 +148,6 @@ public class UpgradeBowl : NetworkBehaviour
         if (!IsServer || !IsSpawned)
             return;
 
-        // Only count actual thrown gold bars.
         ItemHitDamage item =
             other.GetComponentInParent<ItemHitDamage>();
 
@@ -89,7 +156,6 @@ public class UpgradeBowl : NetworkBehaviour
 
         ulong throwerId = item.throwerClientId;
 
-        // Dropped gold without a recorded thrower doesn't count.
         if (throwerId == NetworkedPlayer.NoAttacker)
             return;
 
@@ -105,19 +171,16 @@ public class UpgradeBowl : NetworkBehaviour
 
         lastThrowerClientId = throwerId;
 
-        // Play the gold/fire effect on every client.
         PlayGoldEffectClientRpc();
 
         offeredBars.Value++;
 
         Debug.Log(
-            $"{name}: {offeredBars.Value}/{barsRequired} gold bars offered. " +
+            $"{name}: {offeredBars.Value}/{CurrentPrice} gold bars offered. " +
             $"Last thrower: {throwerId}");
 
-        if (offeredBars.Value >= barsRequired)
-        {
+        if (offeredBars.Value >= CurrentPrice)
             TryGrantUpgrade();
-        }
     }
 
     private void TryGrantUpgrade()
@@ -146,17 +209,22 @@ public class UpgradeBowl : NetworkBehaviour
             return;
         }
 
-        // If the player has reached the maximum level, keep the
-        // offered amount so the bowl doesn't silently lose the payment.
+        // Do not charge the player if the upgrade cannot be granted.
         if (!stats.TryGrantUpgrade(upgradeType))
         {
             Debug.Log($"{name}: Upgrade unavailable or already maxed.");
             return;
         }
 
-        // Successful purchase: reset the bowl and play the reward sound.
+        // Successful upgrade: reset the offered bars.
         offeredBars.Value = 0;
         lastThrowerClientId = ulong.MaxValue;
+
+        // Increase the price for the NEXT upgrade.
+        networkBarsRequired.Value += Mathf.Max(1, priceIncreasePerUpgrade);
+
+        Debug.Log(
+            $"{name}: Upgrade granted! New price: {networkBarsRequired.Value} gold.");
 
         PlayUpgradeGrantedClientRpc();
     }
@@ -164,21 +232,45 @@ public class UpgradeBowl : NetworkBehaviour
     [ClientRpc]
     private void PlayGoldEffectClientRpc()
     {
-        if (fireEffect != null)
+        if (fireEffect != null && !fireEffect.isPlaying)
             fireEffect.Play();
 
-        if (audioSource != null && goldIntoFireSound != null)
+        if (!goldIntoFireEvent.IsNull)
         {
-            audioSource.PlayOneShot(goldIntoFireSound);
+            RuntimeManager.PlayOneShot(
+                goldIntoFireEvent,
+                transform.position);
         }
     }
 
     [ClientRpc]
     private void PlayUpgradeGrantedClientRpc()
     {
-        if (audioSource != null && upgradeGrantedSound != null)
+        // Stop and reset the offering flames.
+        if (fireEffect != null)
         {
-            audioSource.PlayOneShot(upgradeGrantedSound);
+            fireEffect.Stop(
+                true,
+                ParticleSystemStopBehavior.StopEmittingAndClear);
+
+            fireEffect.transform.localScale = baseFireScale;
+        }
+
+        // Play the separate upgrade-success particle effect.
+        if (upgradeGrantedEffect != null)
+        {
+            upgradeGrantedEffect.Stop(
+                true,
+                ParticleSystemStopBehavior.StopEmittingAndClear);
+
+            upgradeGrantedEffect.Play();
+        }
+
+        if (!upgradeGrantedEvent.IsNull)
+        {
+            RuntimeManager.PlayOneShot(
+                upgradeGrantedEvent,
+                transform.position);
         }
     }
 }

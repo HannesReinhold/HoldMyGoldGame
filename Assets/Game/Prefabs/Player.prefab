@@ -145,6 +145,7 @@ GameObject:
   - component: {fileID: 438196879867463906}
   - component: {fileID: 4760379984758195476}
   - component: {fileID: 6744151902576570539}
+  - component: {fileID: 5203531855180082384}
   m_Layer: 7
   m_Name: Player
   m_TagString: Untagged
@@ -575,6 +576,21 @@ MonoBehaviour:
   columns: 2
   rows: 2
   barSpacing: {x: 0.26, y: 0.12, z: 0.4}
+--- !u!114 &5203531855180082384
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2571872415284446001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f2c3b9db21c47034aa0532baaffa6fa9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerUpgradeStats
+  ShowTopMostFoldoutHeaderGroup: 1
+  maxUpgradeLevel: 5
+  increasePerLevel: 0.15
 --- !u!1 &3557858841055659239
 GameObject:
   m_ObjectHideFlags: 0
