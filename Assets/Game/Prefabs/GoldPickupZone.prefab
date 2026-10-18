@@ -129,7 +129,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 1406083891
+  GlobalObjectIdHash: 2480510972
   InScenePlacedSourceGlobalObjectIdHash: 0
   m_InScenePlacedDisabledByDefault: 0
   DeferredDespawnTick: 0
@@ -160,7 +160,16 @@ MonoBehaviour:
   highlightVisual: {fileID: 7901194222821122247}
   amountPerPickup: 1
   interactRadius: 3
-  cooldown: 0
+  cooldown: 1
+  numBars: 1000
+  goldBarPrefab: {fileID: 0}
+  stackOrigin: {fileID: 0}
+  randomSeed: 12345
+  columns: 4
+  rows: 4
+  barSpacing: {x: 0.12, y: 0.05, z: 0.08}
+  positionJitter: {x: 0.025, y: 0.008, z: 0.025}
+  rotationJitter: {x: 8, y: 15, z: 8}
 --- !u!65 &4335689964223078133
 BoxCollider:
   m_ObjectHideFlags: 0
