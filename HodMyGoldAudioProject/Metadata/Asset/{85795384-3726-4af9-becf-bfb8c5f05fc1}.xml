@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.04.00">
+	<object class="EncodableAsset" id="{85795384-3726-4af9-becf-bfb8c5f05fc1}">
+		<property name="assetPath">
+			<value>Neue/WeeTransfer/</value>
+		</property>
+		<relationship name="masterAssetFolder">
+			<destination>{4e3dad76-6050-45ce-9326-0f7fd03e77d9}</destination>
+		</relationship>
+	</object>
+</objects>
